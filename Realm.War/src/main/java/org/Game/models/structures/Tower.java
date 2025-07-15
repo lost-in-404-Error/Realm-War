@@ -43,6 +43,10 @@ public abstract class Tower extends Structure {
         setMaintenanceCost(MAINTENANCE_COST_BY_LEVEL[newLevel - 1]);
     }
 
+    private void setMaintenanceCost(int i) {
+
+    }
+
     @Override
     public void performTurnAction(Kingdom kingdom, GameState gameState) {
 

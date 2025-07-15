@@ -1,6 +1,5 @@
 package org.Game.models.structures;
 
-
 import org.Game.models.Position;
 import org.Game.models.blocks.Block;
 import org.Game.models.GameState;
@@ -15,7 +14,10 @@ public abstract class Structure {
     private final Block baseBlock;
     private final int kingdomId;
 
-    public Structure(int maxLevel, int initialDurability, int maintenanceCost, Position position, Block baseBlock, int kingdomId) {
+
+
+    public Structure(int maxLevel, int initialDurability, int maintenanceCost,
+                     Position position, Block baseBlock, int kingdomId) {
         this.level = 1;
         this.maxLevel = maxLevel;
         this.durability = initialDurability;
@@ -25,10 +27,18 @@ public abstract class Structure {
         this.kingdomId = kingdomId;
     }
 
+
+    public abstract int getBuildCostGold();
+    public abstract int getBuildCostFood();
+    public abstract int getUnitSpace();
+
+
     public abstract boolean canUpgrade();
     public abstract void upgrade();
 
+
     public abstract void performTurnAction(Kingdom kingdom, GameState gameState);
+
 
     public int getLevel() {
         return level;
@@ -68,5 +78,17 @@ public abstract class Structure {
 
     public boolean isDestroyed() {
         return durability <= 0;
+    }
+
+    public String getType() {
+        return "structure";
+    }
+
+
+    public void setKingdomId(int id) {
+    }
+
+    public int getKingdomID() {
+        return kingdomId;
     }
 }

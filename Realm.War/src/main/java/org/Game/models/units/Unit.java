@@ -16,8 +16,12 @@ public abstract class Unit {
     protected int kingdomId;
     private int paymentCost;
     private int rationCost;
-    public Unit(String name, int health, int movement, int attackPower, int attackRange,
-                int goldCost, int foodCost, int unitSpace, Position position, int kingdomId) {
+    private int movementRange;
+    private int hitPoints;
+    private int maxHitPoints;
+
+    public Unit(String name, int health, int movement, int attackPower, int attackRange, int hitPoints, int maxHitPoints,
+                int goldCost, Position position, int kingdomId) {
         this.name = name;
         this.health = health;
         this.movement = movement;
@@ -28,6 +32,8 @@ public abstract class Unit {
         this.unitSpace = unitSpace;
         this.position = position;
         this.kingdomId = kingdomId;
+        this.movementRange = movementRange;
+        this.hitPoints = hitPoints;
     }
 
     public String getName() {
@@ -85,8 +91,42 @@ public abstract class Unit {
     public abstract boolean canMerge(Unit other);
 
     public abstract Unit merge(Unit other);
+
     public abstract boolean canMergeWith(Unit unit2);
 
-    public int getPaymentCost() { return paymentCost; }
-    public int getRationCost() { return rationCost; }
+    public int getPaymentCost() {
+        return paymentCost;
+    }
+
+    public int getRationCost() {
+        return rationCost;
+    }
+
+    public int getMovementRange() {
+
+        return movementRange;
+    }
+
+    public int getHitPoints() {
+        return hitPoints;
+    }
+
+    public void setHitPoints(int hitPoints) {
+        this.hitPoints = hitPoints;
+    }
+
+    public double getMaxHitPoints() {
+        return maxHitPoints;
+    }
+
+    public void takeDamage(int attackPower) {
+    }
+
+    public String getType() {
+        return "Unit";
+    }
+
+    public int getKingdomID() {
+        return kingdomId;
+    }
 }

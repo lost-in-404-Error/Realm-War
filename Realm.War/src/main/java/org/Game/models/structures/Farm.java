@@ -16,11 +16,13 @@ public class Farm extends Structure {
 
     private int foodProduction;
 
-    public Farm(Position position, Block baseBlock, int kingdomId, int existingFarmsCount) {
+    public Farm(Position position, Block baseBlock, int kingdomId) {
         super(MAX_LEVEL, DURABILITY_BY_LEVEL[0], MAINTENANCE_COST, position, baseBlock, kingdomId);
         setLevel(1);
         this.foodProduction = FOOD_PRODUCTION_BY_LEVEL[0];
     }
+
+
 
     @Override
     public boolean canUpgrade() {
@@ -49,7 +51,31 @@ public class Farm extends Structure {
     }
 
     public int getUpgradeCost() {
-        return LEVEL_UP_COST_BY_LEVEL[getLevel() - 1];
+        int levelIndex = getLevel() - 1;
+        if (levelIndex < 0 || levelIndex >= LEVEL_UP_COST_BY_LEVEL.length) {
+            return 0;
+        }
+        return LEVEL_UP_COST_BY_LEVEL[levelIndex];
+    }
+
+    @Override
+    public int getMaintenanceCost() {
+        return MAINTENANCE_COST;
+    }
+
+    @Override
+    public int getBuildCostGold() {
+        return getBuildingCost(0);
+    }
+
+    @Override
+    public int getBuildCostFood() {
+        return 0;
+    }
+
+    @Override
+    public int getUnitSpace() {
+        return 0;
     }
 
     public static int getBuildingCost(int farmsCount) {

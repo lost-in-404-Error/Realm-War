@@ -58,5 +58,9 @@ public abstract class Block {
     public void setUnit(Unit unit) {
         this.unit = unit;
     }
+
+    public int getOwnerID() {
+        return 0;
+    }
 }
 
