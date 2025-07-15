@@ -1,45 +1,61 @@
 package org.Game.controllers;
 
-
+import org.Game.models.Position;
 import org.Game.models.structures.Structure;
 
+import java.util.Iterator;
 import java.util.List;
-
-import java.util.ArrayList;
-import java.util.Collections;
 
 public class StructureController {
     private final List<Structure> structures;
 
     public StructureController(List<Structure> structures) {
-        if (structures == null) {
-            this.structures = new ArrayList<>();
-        } else {
-            this.structures = structures;
-        }
+        this.structures = structures;
     }
 
-    public void addStructure(Structure structure) {
-        if (structure != null) {
-            structures.add(structure);
+
+    public boolean createStructure(Structure structure) {
+        if (findStructureAt(structure.getPosition()) != null) {
+            return false;
         }
+        structures.add(structure);
+        return true;
     }
 
-    public boolean levelUpStructure(Structure structure) {
-        if (structure != null && structure.canLevelUp()) {
-            structure.levelUp();
-            return true;
+
+    public boolean upgradeStructure(Structure structure) {
+        if (structure == null || !structure.canUpgrade()) {
+            return false;
+        }
+        structure.upgrade();
+        return true;
+    }
+
+
+    public boolean removeStructure(Position position) {
+        Iterator<Structure> iterator = structures.iterator();
+        while (iterator.hasNext()) {
+            Structure s = iterator.next();
+            if (s.getPosition().equals(position)) {
+                iterator.remove();
+                return true;
+            }
         }
         return false;
     }
 
-    public void removeStructure(Structure structure) {
-        if (structure != null) {
-            structures.remove(structure);
+
+    public Structure findStructureAt(Position position) {
+        for (Structure s : structures) {
+            if (s.getPosition().equals(position)) {
+                return s;
+            }
         }
+        return null;
     }
 
+
     public List<Structure> getStructures() {
-        return Collections.unmodifiableList(structures);
+        return structures;
     }
 }
