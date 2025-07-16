@@ -184,6 +184,13 @@ public class GameState implements Serializable {
         return new ArrayList<>();
     }
 
+    public List<Unit> getAllUnits() {
+        List<Unit> allUnits = new ArrayList<>();
+        for (Kingdom kingdom : kingdoms) {
+            allUnits.addAll(kingdom.getUnits());
+        }
+        return allUnits;
+    }
 
     public void saveGameState(String filePath) {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath))) {
@@ -226,4 +233,7 @@ public class GameState implements Serializable {
         return null;
     }
 
+    public Block getBlockAt(Position destination) {
+        return null;
+    }
 }

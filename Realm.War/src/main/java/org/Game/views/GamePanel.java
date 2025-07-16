@@ -22,19 +22,25 @@ public class GamePanel extends JPanel {
 
     private Consumer<Position> positionSelectListener;
 
-
+    // Structure Images
     private Image farmImage;
     private Image barrackImage;
     private Image towerImage;
     private Image marketImage;
 
+    // Unit Images
+    private Image peasantImage;
+    private Image spearmanImage;
+    private Image swordmanImage;
+    private Image knightImage;
+
     public GamePanel(GameState gameState) {
         this.gameState = gameState;
-
         setPreferredSize(new Dimension(800, 600));
         setBackground(Color.DARK_GRAY);
 
         loadStructureImages();
+        loadUnitImages();
 
         addMouseListener(new MouseAdapter() {
             @Override
@@ -54,14 +60,30 @@ public class GamePanel extends JPanel {
 
     private void loadStructureImages() {
         try {
-            farmImage = new ImageIcon(getClass().getResource("/img/farm.png")).getImage();
-            barrackImage = new ImageIcon(getClass().getResource("/img/barrack.png")).getImage();
-            towerImage = new ImageIcon(getClass().getResource("/img/tower.png")).getImage();
-            marketImage = new ImageIcon(getClass().getResource("/img/market.png")).getImage();
+            farmImage = loadImage("/img/farm.png");
+            barrackImage = loadImage("/img/barrack.png");
+            towerImage = loadImage("/img/tower.png");
+            marketImage = loadImage("/img/market.png");
         } catch (Exception e) {
             System.err.println("Error loading structure images:");
             e.printStackTrace();
         }
+    }
+
+    private void loadUnitImages() {
+        try {
+            peasantImage = loadImage("/img/peasant.png");
+            spearmanImage = loadImage("/img/spearman.png");
+            swordmanImage = loadImage("/img/swordman.png");
+            knightImage = loadImage("/img/knight.png");
+        } catch (Exception e) {
+            System.err.println("Error loading unit images:");
+            e.printStackTrace();
+        }
+    }
+
+    private Image loadImage(String path) {
+        return new ImageIcon(getClass().getResource(path)).getImage();
     }
 
     public void setPositionSelectListener(Consumer<Position> listener) {
@@ -74,42 +96,29 @@ public class GamePanel extends JPanel {
         repaint();
     }
 
-    private void handleClick(int blockX, int blockY) {
-        if (blockX < 0 || blockX >= gameState.getGameMap().length ||
-                blockY < 0 || blockY >= gameState.getGameMap()[0].length) {
-            return;
-        }
+    private void handleClick(int x, int y) {
+        if (x < 0 || x >= gameState.getGameMap().length || y < 0 || y >= gameState.getGameMap()[0].length) return;
 
         if (moveMode) {
             if (selectedUnit == null) {
-                selectedUnit = findUnitAt(blockX, blockY);
-                if (selectedUnit != null) {
-                    System.out.println("Unit selected at " + blockX + "," + blockY);
-                }
-            } else {
-                if (canMoveTo(selectedUnit, blockX, blockY)) {
-                    selectedUnit.setPosition(new Position(blockX, blockY));
-
-                    Block targetBlock = gameState.getGameMap()[blockX][blockY];
-                    gameState.getKingdomById(selectedUnit.getKingdomId()).absorbBlock(targetBlock);
-
-                    System.out.println("Unit moved to " + blockX + "," + blockY);
-                    setMoveMode(false);
-                    repaint();
-                }
-
+                selectedUnit = findUnitAt(x, y);
+            } else if (canMoveTo(selectedUnit, x, y)) {
+                selectedUnit.setPosition(new Position(x, y));
+                Block targetBlock = gameState.getGameMap()[x][y];
+                gameState.getKingdomById(selectedUnit.getKingdomId()).absorbBlock(targetBlock);
+                setMoveMode(false);
             }
         } else {
-            System.out.println("Clicked on block: " + blockX + "," + blockY);
+            System.out.println("Clicked on: " + x + "," + y);
         }
+
+        repaint();
     }
 
     private Unit findUnitAt(int x, int y) {
         for (Kingdom kingdom : gameState.getKingdoms()) {
             for (Unit unit : kingdom.getUnits()) {
-                if (unit.getPosition().getX() == x && unit.getPosition().getY() == y) {
-                    return unit;
-                }
+                if (unit.getPosition().equals(new Position(x, y))) return unit;
             }
         }
         return null;
@@ -152,52 +161,30 @@ public class GamePanel extends JPanel {
         }
 
         if (moveMode && selectedUnit != null) {
-            int cx = selectedUnit.getPosition().getX();
-            int cy = selectedUnit.getPosition().getY();
-            int range = selectedUnit.getMovementRange();
-
-            g.setColor(new Color(0, 255, 255, 80));
-
-            for (int dx = -range; dx <= range; dx++) {
-                for (int dy = -range; dy <= range; dy++) {
-                    int nx = cx + dx;
-                    int ny = cy + dy;
-                    if (canMoveTo(selectedUnit, nx, ny)) {
-                        g.fillRect(nx * BLOCK_SIZE, ny * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
-                    }
-                }
-            }
-
-            g.setColor(Color.CYAN);
-            g.drawRect(cx * BLOCK_SIZE, cy * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+            highlightMovementRange(g, selectedUnit);
         }
     }
 
     private void drawBlock(Graphics g, Block block, int x, int y) {
-        if (block instanceof VoidBlock) {
-            g.setColor(Color.BLACK);
-        } else if (block instanceof ForestBlock) {
-            g.setColor(new Color(34, 139, 34));
-        } else if (block instanceof EmptyBlock) {
+        if (block instanceof VoidBlock) g.setColor(Color.BLACK);
+        else if (block instanceof ForestBlock) g.setColor(new Color(34, 139, 34));
+        else if (block instanceof EmptyBlock) {
             if (block.isAbsorbed()) {
-                if (block.getOwnerID() == 1)
-                    g.setColor(new Color(150, 13, 72));
-                else if (block.getOwnerID() == 2)
-                    g.setColor(new Color(182, 25, 25));
-                else
-                    g.setColor(Color.LIGHT_GRAY);
+                g.setColor(switch (block.getOwnerID()) {
+                    case 1 -> new Color(150, 13, 72);
+                    case 2 -> new Color(182, 25, 25);
+                    default -> Color.LIGHT_GRAY;
+                });
             } else {
                 g.setColor(new Color(144, 238, 144));
             }
         } else {
             g.setColor(Color.GRAY);
         }
+
         g.fillRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
         g.setColor(Color.BLACK);
         g.drawRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
-
-
-
     }
 
     private void drawStructure(Graphics g, Structure structure) {
@@ -205,18 +192,19 @@ public class GamePanel extends JPanel {
         int x = pos.getX() * BLOCK_SIZE;
         int y = pos.getY() * BLOCK_SIZE;
 
-        Image image = null;
+        Image img = switch (structure) {
+            case Farm ignored -> farmImage;
+            case Barrack ignored -> barrackImage;
+            case Tower ignored -> towerImage;
+            case Market ignored -> marketImage;
+            default -> null;
+        };
 
-        if (structure instanceof Farm) image = farmImage;
-        else if (structure instanceof Barrack) image = barrackImage;
-        else if (structure instanceof Tower) image = towerImage;
-        else if (structure instanceof Market) image = marketImage;
-
-        if (image != null) {
-            g.drawImage(image, x + 5, y + 5, BLOCK_SIZE - 10, BLOCK_SIZE - 10, this);
+        if (img != null) {
+            g.drawImage(img, x + 5, y + 5, BLOCK_SIZE - 10, BLOCK_SIZE - 10, this);
         } else {
             g.setColor(Color.GRAY);
-            g.fillRect(x + 10, y + 10, BLOCK_SIZE - 20, BLOCK_SIZE - 20);
+            g.fillRect(x + 10, y + 10, 30, 30);
         }
 
         g.setColor(Color.WHITE);
@@ -233,28 +221,45 @@ public class GamePanel extends JPanel {
         int x = pos.getX() * BLOCK_SIZE;
         int y = pos.getY() * BLOCK_SIZE;
 
-        if (unit.getKingdomId() == 0)
-            g.setColor(new Color(0, 150, 255));
-        else if (unit.getKingdomId() == 1)
-            g.setColor(new Color(255, 100, 0));
-        else
-            g.setColor(Color.GRAY);
+        Image img = switch (unit) {
+            case Peasant ignored -> peasantImage;
+            case Spearman ignored -> spearmanImage;
+            case Swordman ignored -> swordmanImage;
+            case Knight ignored -> knightImage;
+            default -> null;
+        };
 
-        if (unit instanceof Peasant) {
-            g.fillOval(x + 15, y + 15, 20, 20);
-        } else if (unit instanceof Spearman) {
-            g.fillRect(x + 15, y + 15, 20, 20);
-        } else if (unit instanceof Swordman) {
-            int[] xPoints = {x + 25, x + 15, x + 35};
-            int[] yPoints = {y + 15, y + 35, y + 35};
-            g.fillPolygon(xPoints, yPoints, 3);
-        } else if (unit instanceof Knight) {
-            g.fillOval(x + 10, y + 10, 30, 30);
+        if (img != null) {
+            g.drawImage(img, x + 5, y + 5, BLOCK_SIZE - 10, BLOCK_SIZE - 10, this);
+        } else {
+            g.setColor(Color.GRAY);
+            g.fillRect(x + 10, y + 10, 30, 30);
         }
 
         g.setColor(Color.RED);
         int hpWidth = (int) ((BLOCK_SIZE - 4) * ((double) unit.getHitPoints() / unit.getMaxHitPoints()));
         g.fillRect(x + 2, y + BLOCK_SIZE - 8, hpWidth, 4);
+    }
+
+    private void highlightMovementRange(Graphics g, Unit unit) {
+        int cx = unit.getPosition().getX();
+        int cy = unit.getPosition().getY();
+        int range = unit.getMovementRange();
+
+        g.setColor(new Color(0, 255, 255, 80));
+
+        for (int dx = -range; dx <= range; dx++) {
+            for (int dy = -range; dy <= range; dy++) {
+                int nx = cx + dx;
+                int ny = cy + dy;
+                if (canMoveTo(unit, nx, ny)) {
+                    g.fillRect(nx * BLOCK_SIZE, ny * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+                }
+            }
+        }
+
+        g.setColor(Color.CYAN);
+        g.drawRect(cx * BLOCK_SIZE, cy * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
     }
 
     public void setGameState(GameState gameState) {

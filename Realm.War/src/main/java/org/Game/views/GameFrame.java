@@ -56,7 +56,12 @@ public class GameFrame extends JFrame {
 
         actionPanel.addRecruitListener(e -> {
             JOptionPane.showMessageDialog(this, "Recruit menu opened.");
+
         });
+        actionPanel.addRecruitUnitListener("peasant", e -> tryRecruitUnit("peasant"));
+        actionPanel.addRecruitUnitListener("spearman", e -> tryRecruitUnit("spearman"));
+        actionPanel.addRecruitUnitListener("swordman", e -> tryRecruitUnit("swordman"));
+        actionPanel.addRecruitUnitListener("knight", e -> tryRecruitUnit("knight"));
 
         actionPanel.addMoveListener(e -> {
             gamePanel.setMoveMode(true);
@@ -97,6 +102,23 @@ public class GameFrame extends JFrame {
             updateInfoPanel();
         }
     }
+
+    private void tryRecruitUnit(String unitType) {
+        if (selectedPosition == null) {
+            JOptionPane.showMessageDialog(this, "No position selected!", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        boolean success = gameController.tryRecruitUnit(unitType, selectedPosition);
+
+        if (!success) {
+            JOptionPane.showMessageDialog(this, "Failed to recruit " + unitType + ".", "Error", JOptionPane.ERROR_MESSAGE);
+        } else {
+            gamePanel.repaint();
+            updateInfoPanel();
+        }
+    }
+
 
     private void startTurnTimer() {
         turnSecondsLeft = TURN_TIME;

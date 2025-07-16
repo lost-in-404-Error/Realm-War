@@ -26,11 +26,7 @@ public class Kingdom {
         this.structures = new ArrayList<>();
         this.units = new ArrayList<>();
         this.absorbedBlocks = new ArrayList<>();
-
-
         this.townHall.setKingdomId(id);
-
-
         this.structures.add(townHall);
         this.totalUnitSpace = townHall.getUnitSpace();
         this.usedUnitSpace = 0;
@@ -39,22 +35,18 @@ public class Kingdom {
     }
 
     public void startTurn(GameState gameState) {
-
         for (Structure structure : structures) {
             structure.performTurnAction(this, this.gameState);
         }
-
 
         for (Block block : absorbedBlocks) {
             this.gold += block.getResourceYield("GOLD");
             this.food += block.getResourceYield("FOOD");
         }
 
-
         for (Structure structure : structures) {
             this.gold -= structure.getMaintenanceCost();
         }
-
 
         for (Unit unit : units) {
             this.gold -= unit.getPaymentCost();
@@ -67,6 +59,12 @@ public class Kingdom {
             structure.setKingdomId(this.id);
             structures.add(structure);
             totalUnitSpace += structure.getUnitSpace();
+        }
+    }
+
+    public void removeStructure(Structure structure) {
+        if (structures.remove(structure)) {
+            totalUnitSpace -= structure.getUnitSpace();
         }
     }
 
@@ -92,8 +90,7 @@ public class Kingdom {
         this.food += 3;
     }
 
-
-
+    // --- Getters & Setters ---
     public int getId() {
         return id;
     }
@@ -150,16 +147,28 @@ public class Kingdom {
         this.food += amount;
     }
 
-    public void subtractGold(int goldCost) {
+    public void decreaseGold(int amount) {
+        this.gold = Math.max(0, this.gold - amount);
     }
 
-    public void subtractFood(int foodCost) {
+    public void decreaseFood(int amount) {
+        this.food = Math.max(0, this.food - amount);
     }
 
-    public void removeStructure(Structure s) {
+    public void subtractGold(int amount) {
+        decreaseGold(amount);
+    }
+
+    public void subtractFood(int amount) {
+        decreaseFood(amount);
     }
 
     public void setGameState(GameState gameState) {
         this.gameState = gameState;
+    }
+
+    public Kingdom getUnitController() {
+
+        return this;
     }
 }

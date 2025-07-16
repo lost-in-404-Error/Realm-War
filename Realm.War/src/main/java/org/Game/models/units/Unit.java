@@ -36,7 +36,7 @@ public abstract class Unit {
         this.kingdomId = kingdomId;
         this.movementRange = movementRange;
 
-        // در صورت نیاز می‌تونی اینا رو مقدار دهی کنی
+
         this.foodCost = 0;
         this.unitSpace = 0;
         this.paymentCost = 0;
@@ -126,13 +126,13 @@ public abstract class Unit {
         return "Unit";
     }
 
-    // --- Combat Methods ---
+
 
     public void takeDamage(int damage) {
         this.hitPoints = Math.max(0, this.hitPoints - damage);
     }
 
-    // --- Merging ---
+
 
     public abstract boolean canMerge(Unit other);
 
