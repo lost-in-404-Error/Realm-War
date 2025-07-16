@@ -20,21 +20,30 @@ public abstract class Unit {
     private int hitPoints;
     private int maxHitPoints;
 
-    public Unit(String name, int health, int movement, int attackPower, int attackRange, int hitPoints, int maxHitPoints,
-                int goldCost, Position position, int kingdomId) {
+    public Unit(String name, int health, int movement, int attackPower, int attackRange,
+                int hitPoints, int maxHitPoints, int goldCost, Position position,
+                int kingdomId, int movementRange) {
+
         this.name = name;
         this.health = health;
         this.movement = movement;
         this.attackPower = attackPower;
         this.attackRange = attackRange;
+        this.hitPoints = hitPoints;
+        this.maxHitPoints = maxHitPoints;
         this.goldCost = goldCost;
-        this.foodCost = foodCost;
-        this.unitSpace = unitSpace;
         this.position = position;
         this.kingdomId = kingdomId;
         this.movementRange = movementRange;
-        this.hitPoints = hitPoints;
+
+        // در صورت نیاز می‌تونی اینا رو مقدار دهی کنی
+        this.foodCost = 0;
+        this.unitSpace = 0;
+        this.paymentCost = 0;
+        this.rationCost = 0;
     }
+
+    // --- Getters & Setters ---
 
     public String getName() {
         return name;
@@ -85,14 +94,25 @@ public abstract class Unit {
     }
 
     public void setKingdomId(int id) {
-        this.kingdomId = id;
+        this.kingdomId = kingdomId;
+
     }
 
-    public abstract boolean canMerge(Unit other);
+    public int getMovementRange() {
+        return movementRange;
+    }
 
-    public abstract Unit merge(Unit other);
+    public int getHitPoints() {
+        return hitPoints;
+    }
 
-    public abstract boolean canMergeWith(Unit unit2);
+    public void setHitPoints(int hitPoints) {
+        this.hitPoints = Math.max(0, Math.min(hitPoints, maxHitPoints));
+    }
+
+    public int getMaxHitPoints() {
+        return maxHitPoints;
+    }
 
     public int getPaymentCost() {
         return paymentCost;
@@ -102,31 +122,21 @@ public abstract class Unit {
         return rationCost;
     }
 
-    public int getMovementRange() {
-
-        return movementRange;
-    }
-
-    public int getHitPoints() {
-        return hitPoints;
-    }
-
-    public void setHitPoints(int hitPoints) {
-        this.hitPoints = hitPoints;
-    }
-
-    public double getMaxHitPoints() {
-        return maxHitPoints;
-    }
-
-    public void takeDamage(int attackPower) {
-    }
-
     public String getType() {
         return "Unit";
     }
 
-    public int getKingdomID() {
-        return kingdomId;
+    // --- Combat Methods ---
+
+    public void takeDamage(int damage) {
+        this.hitPoints = Math.max(0, this.hitPoints - damage);
     }
+
+    // --- Merging ---
+
+    public abstract boolean canMerge(Unit other);
+
+    public abstract Unit merge(Unit other);
+
+    public abstract boolean canMergeWith(Unit unit2);
 }

@@ -3,17 +3,20 @@ package org.Game.models.units;
 import org.Game.models.Position;
 
 public class Spearman extends Unit {
-    public static final int SPEARMAN_HP = 30;
-    public static final int MOVEMENT = 1;
-    public static final int ATTACK_POWER = 5;
-    public static final int ATTACK_RANGE = 1;
-    public static final int GOLD_COST = 2;
-    public static final int FOOD_COST = 1;
-    public static final int UNIT_SPACE = 1;
+    private static final int HEALTH = 30;
+    private static final int SPEED = 1;
+    private static final int ATTACK = 5;
+    private static final int RANGE = 1;
+    private static final int HP = 30;
+    private static final int MAX_HP = 30;
+    private static final int GOLD_COST = 2;
+    private static final int FOOD_COST = 1;
+    private static final int UNIT_SPACE = 1;
 
     public Spearman(Position position, int kingdomId) {
-        super("Spearman", SPEARMAN_HP, MOVEMENT, ATTACK_POWER, ATTACK_RANGE,
-                GOLD_COST, FOOD_COST, UNIT_SPACE, position, kingdomId);
+        super("Spearman", HEALTH, SPEED, ATTACK, RANGE, HP, MAX_HP, GOLD_COST, position, kingdomId, SPEED);
+        this.foodCost = FOOD_COST;
+        this.unitSpace = UNIT_SPACE;
     }
 
     @Override
@@ -23,9 +26,7 @@ public class Spearman extends Unit {
 
     @Override
     public Unit merge(Unit other) {
-        if (!canMerge(other)) {
-            throw new IllegalArgumentException("Cannot merge these units");
-        }
+        if (!canMerge(other)) throw new IllegalArgumentException("Cannot merge these units");
         return new Knight(this.getPosition(), this.getKingdomId());
     }
 

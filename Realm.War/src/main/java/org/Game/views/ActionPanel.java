@@ -144,7 +144,7 @@ public class ActionPanel extends JPanel {
         return button;
     }
 
-    // ---------- این بخش برای اتصال اکشن‌ها به دکمه‌های پنل ----------
+
 
     public void addEndTurnListener(ActionListener listener) {
         endTurnButton.addActionListener(listener);
@@ -166,11 +166,7 @@ public class ActionPanel extends JPanel {
         attackButton.addActionListener(listener);
     }
 
-    /**
-     * این متد به تو اجازه میده به دکمه ساخت هر نوع سازه، اکشن دلخواهت رو اضافه کنی
-     * @param structureType مثلا "farm" یا "market"
-     * @param listener  اکشن لیسنر
-     */
+
     public void addBuildStructureListener(String structureType, ActionListener listener) {
         for (Component comp : buildPanel.getComponents()) {
             if (comp instanceof JButton) {
@@ -183,11 +179,7 @@ public class ActionPanel extends JPanel {
         }
     }
 
-    /**
-     * این متد به تو اجازه میده به دکمه جذب نیرو اکشن اضافه کنی
-     * @param unitType مثلا "peasant" یا "knight"
-     * @param listener اکشن لیسنر
-     */
+
     public void addRecruitUnitListener(String unitType, ActionListener listener) {
         for (Component comp : recruitPanel.getComponents()) {
             if (comp instanceof JButton) {
@@ -200,7 +192,7 @@ public class ActionPanel extends JPanel {
         }
     }
 
-    // فعال یا غیرفعال کردن کل دکمه‌ها
+
     public void setActionsEnabled(boolean enabled) {
         buildButton.setEnabled(enabled);
         recruitButton.setEnabled(enabled);

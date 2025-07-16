@@ -18,6 +18,7 @@ public class Kingdom {
     private final List<Structure> structures;
     private final List<Unit> units;
     private final List<Block> absorbedBlocks;
+    private GameState gameState;
 
     public Kingdom(int id, TownHall townHall) {
         this.id = id;
@@ -37,10 +38,10 @@ public class Kingdom {
         this.food = 20;
     }
 
-    public void startTurn() {
+    public void startTurn(GameState gameState) {
 
         for (Structure structure : structures) {
-            structure.performTurnAction(this, null);
+            structure.performTurnAction(this, this.gameState);
         }
 
 
@@ -147,5 +148,18 @@ public class Kingdom {
 
     public void addFood(int amount) {
         this.food += amount;
+    }
+
+    public void subtractGold(int goldCost) {
+    }
+
+    public void subtractFood(int foodCost) {
+    }
+
+    public void removeStructure(Structure s) {
+    }
+
+    public void setGameState(GameState gameState) {
+        this.gameState = gameState;
     }
 }

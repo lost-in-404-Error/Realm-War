@@ -1,7 +1,6 @@
 package org.Game.views;
 
 import org.Game.controllers.GameController;
-import org.Game.controllers.StructureController;
 import org.Game.models.GameState;
 import org.Game.models.Kingdom;
 import org.Game.models.Position;
@@ -32,7 +31,8 @@ public class GameFrame extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        gamePanel = new GamePanel();
+
+        gamePanel = new GamePanel(controller.getGameState());
         infoPanel = new InfoPanel();
         actionPanel = new ActionPanel();
 
@@ -59,19 +59,44 @@ public class GameFrame extends JFrame {
         });
 
         actionPanel.addMoveListener(e -> {
-            JOptionPane.showMessageDialog(this, "Move mode enabled.");
+            gamePanel.setMoveMode(true);
         });
 
         actionPanel.addAttackListener(e -> {
             JOptionPane.showMessageDialog(this, "Attack mode enabled.");
         });
 
+        actionPanel.addBuildStructureListener("farm", e -> {
+            tryBuildStructure("farm");
+        });
+
+        actionPanel.addBuildStructureListener("barrack", e -> tryBuildStructure("barrack"));
+        actionPanel.addBuildStructureListener("tower", e -> tryBuildStructure("tower"));
+        actionPanel.addBuildStructureListener("market", e -> tryBuildStructure("market"));
+
         actionPanel.setActionsEnabled(true);
 
 
+        gamePanel.setPositionSelectListener(pos -> {
+            selectedPosition = pos;
+            System.out.println("Selected position: " + pos.getX() + "," + pos.getY());
+        });
     }
 
+    private void tryBuildStructure(String type) {
+        if (selectedPosition == null) {
+            JOptionPane.showMessageDialog(this, "No position selected!", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
+        boolean success = gameController.tryBuildStructure(type, selectedPosition);
+        if (!success) {
+            JOptionPane.showMessageDialog(this, "Failed to build " + type + ".", "Error", JOptionPane.ERROR_MESSAGE);
+        } else {
+            gamePanel.repaint();
+            updateInfoPanel();
+        }
+    }
 
     private void startTurnTimer() {
         turnSecondsLeft = TURN_TIME;
@@ -123,7 +148,7 @@ public class GameFrame extends JFrame {
     }
 
     public static void main(String[] args) {
-        GameState gameState = new GameState(10, 10, 2);
+        GameState gameState = new GameState(15, 10, 2);
         GameController gameController = new GameController(gameState);
         gameController.startGame();
 

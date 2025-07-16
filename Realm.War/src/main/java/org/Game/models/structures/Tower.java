@@ -8,7 +8,7 @@ import org.Game.models.units.Unit;
 
 import java.util.List;
 
-public abstract class Tower extends Structure {
+public  class Tower extends Structure {
     private static final int MAX_LEVEL = 3;
     private static final int[] ATTACK_POWER_BY_LEVEL = {10, 15, 20};
     private static final int[] DURABILITY_BY_LEVEL = {100, 150, 200};
@@ -23,6 +23,21 @@ public abstract class Tower extends Structure {
         super(MAX_LEVEL, DURABILITY_BY_LEVEL[0], MAINTENANCE_COST_BY_LEVEL[0], position, baseBlock, kingdomId);
         this.attackPower = ATTACK_POWER_BY_LEVEL[0];
         setLevel(1);
+    }
+
+    @Override
+    public int getBuildCostGold() {
+        return 0;
+    }
+
+    @Override
+    public int getBuildCostFood() {
+        return 0;
+    }
+
+    @Override
+    public int getUnitSpace() {
+        return 0;
     }
 
     @Override
@@ -50,11 +65,18 @@ public abstract class Tower extends Structure {
     @Override
     public void performTurnAction(Kingdom kingdom, GameState gameState) {
 
-        List<Unit> enemies = gameState.getUnitsInRange(getPosition(), attackRange, kingdom.getId());
-        for (Unit enemy : enemies) {
-            enemy.takeDamage(attackPower);
+
+            if (gameState == null) {
+                System.err.println("⚠️ Error: gameState is null in Tower.performTurnAction!");
+                return;
+            }
+
+            List<Unit> enemies = gameState.getUnitsInRange(getPosition(), attackRange, kingdom.getId());
+            for (Unit enemy : enemies) {
+                enemy.takeDamage(attackPower);
+            }
         }
-    }
+
 
     public int getAttackPower() {
         return attackPower;

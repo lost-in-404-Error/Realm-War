@@ -8,7 +8,8 @@ public abstract class Block {
     protected Position position;
     protected boolean walkable;
     protected boolean absorbed;
-    protected int kingdomId;
+    protected int kingdomId; // -1 means no owner
+
     private Structure structure;
     private Unit unit;
 
@@ -19,21 +20,38 @@ public abstract class Block {
         this.kingdomId = -1;
     }
 
-    public Position getPosition() { return position; }
-    public boolean isAbsorbed() { return absorbed; }
+    public Position getPosition() {
+        return position;
+    }
+
+    public boolean isAbsorbed() {
+        return absorbed;
+    }
+
     public void setAbsorbed(boolean absorbed, int kingdomId) {
         this.absorbed = absorbed;
-        this.kingdomId = kingdomId;
+        if (absorbed) {
+            this.kingdomId = kingdomId;
+        } else {
+            this.kingdomId = -1;
+        }
+
+
     }
+
+    public int getOwnerID() {
+        return kingdomId;
+    }
+
     public boolean isWalkable() {
         return walkable;
     }
 
     public abstract boolean canBuildStructure();
     public abstract int getResourceYield(String resourceType);
-    public abstract String getBlockType();
     public abstract int getGoldGeneration();
     public abstract int getFoodGeneration();
+    public abstract String getBlockType();
 
     public boolean hasStructure() {
         return structure != null;
@@ -59,8 +77,7 @@ public abstract class Block {
         this.unit = unit;
     }
 
-    public int getOwnerID() {
-        return 0;
+    public boolean isBuildable() {
+        return walkable;
     }
 }
-

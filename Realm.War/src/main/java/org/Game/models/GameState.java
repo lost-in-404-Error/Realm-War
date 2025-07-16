@@ -62,10 +62,14 @@ public class GameState implements Serializable {
             Block baseBlock = gameMap[townHallPos.getX()][townHallPos.getY()];
             TownHall townHall = new TownHall(townHallPos, baseBlock, i + 1);
             Kingdom kingdom = new Kingdom(i + 1, townHall);
-            kingdoms.add(kingdom);
 
+
+            kingdom.setGameState(this);
+
+            kingdoms.add(kingdom);
             absorbSurroundingBlocks(kingdom, townHallPos);
         }
+
     }
 
     private void absorbSurroundingBlocks(Kingdom kingdom, Position center) {
@@ -84,6 +88,7 @@ public class GameState implements Serializable {
         }
     }
 
+
     public void nextTurn() {
         currentPlayerTurn = (currentPlayerTurn + 1) % kingdoms.size();
 
@@ -92,9 +97,11 @@ public class GameState implements Serializable {
         }
 
         Kingdom currentKingdom = kingdoms.get(currentPlayerTurn);
-        currentKingdom.startTurn();
+        currentKingdom.startTurn(this);
+
         System.out.println("Turn " + turnNumber + ": Player " + (currentPlayerTurn + 1) + "'s turn.");
     }
+
 
     public void startGame() {
         if (running) return;
@@ -115,7 +122,7 @@ public class GameState implements Serializable {
             endTurn();
         }, TURN_DURATION, TURN_DURATION, TimeUnit.SECONDS);
 
-        kingdoms.get(currentPlayerTurn).startTurn();
+        kingdoms.get(currentPlayerTurn).startTurn(this);
         System.out.println("Game started. Player " + (currentPlayerTurn + 1) + " begins.");
     }
 
@@ -202,4 +209,21 @@ public class GameState implements Serializable {
             return null;
         }
     }
+
+    public Kingdom getKingdom(int kingdomId) {
+        int index = kingdomId - 1;
+        if (index < 0 || index >= kingdoms.size()) {
+            throw new IllegalArgumentException("Invalid kingdom ID: " + kingdomId);
+        }
+        return kingdoms.get(index);
+    }
+
+
+    public Kingdom getKingdomById(int id) {
+        for (Kingdom kingdom : kingdoms) {
+            if (kingdom.getId() == id) return kingdom;
+        }
+        return null;
+    }
+
 }
