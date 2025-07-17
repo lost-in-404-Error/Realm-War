@@ -80,4 +80,11 @@ public abstract class Block {
     public boolean isBuildable() {
         return walkable;
     }
+
+    public boolean isForest() {
+        return false;
+    }
+    public boolean isOccupied() {
+        return unit != null;
+    }
 }

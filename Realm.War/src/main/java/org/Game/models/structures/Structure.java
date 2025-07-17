@@ -91,4 +91,9 @@ public abstract class Structure {
     public int getKingdomID() {
         return kingdomId;
     }
+
+
+    public Object getCost() {
+        return getBuildCostGold() + getBuildCostFood() + getUnitSpace();
+    }
 }

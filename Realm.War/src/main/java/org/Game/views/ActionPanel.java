@@ -11,6 +11,7 @@ public class ActionPanel extends JPanel {
     private final JButton recruitButton;
     private final JButton moveButton;
     private final JButton attackButton;
+    private final JButton mergeButton;  // اضافه شد
 
     private final JPanel buildPanel;
     private final JPanel recruitPanel;
@@ -29,10 +30,18 @@ public class ActionPanel extends JPanel {
         moveButton = createButtonWithIcon("Move", "/img/move.png");
         attackButton = createButtonWithIcon("Attack", "/img/attack.png");
 
+
+        mergeButton = new JButton("Merge");
+        mergeButton.setPreferredSize(new Dimension(130, 50));
+        mergeButton.setFocusPainted(false);
+        mergeButton.setToolTipText("Merge");
+
+
         mainButtonsPanel.add(buildButton);
         mainButtonsPanel.add(recruitButton);
         mainButtonsPanel.add(moveButton);
         mainButtonsPanel.add(attackButton);
+        mainButtonsPanel.add(mergeButton);
         mainButtonsPanel.add(endTurnButton);
 
         add(mainButtonsPanel, BorderLayout.SOUTH);
@@ -144,8 +153,6 @@ public class ActionPanel extends JPanel {
         return button;
     }
 
-
-
     public void addEndTurnListener(ActionListener listener) {
         endTurnButton.addActionListener(listener);
     }
@@ -166,6 +173,9 @@ public class ActionPanel extends JPanel {
         attackButton.addActionListener(listener);
     }
 
+    public void addMergeListener(ActionListener listener) {
+        mergeButton.addActionListener(listener);
+    }
 
     public void addBuildStructureListener(String structureType, ActionListener listener) {
         for (Component comp : buildPanel.getComponents()) {
@@ -179,7 +189,6 @@ public class ActionPanel extends JPanel {
         }
     }
 
-
     public void addRecruitUnitListener(String unitType, ActionListener listener) {
         for (Component comp : recruitPanel.getComponents()) {
             if (comp instanceof JButton) {
@@ -192,12 +201,16 @@ public class ActionPanel extends JPanel {
         }
     }
 
-
     public void setActionsEnabled(boolean enabled) {
         buildButton.setEnabled(enabled);
         recruitButton.setEnabled(enabled);
         moveButton.setEnabled(enabled);
         attackButton.setEnabled(enabled);
+        mergeButton.setEnabled(enabled);
         endTurnButton.setEnabled(enabled);
+    }
+
+    public void setEndTurnEnabled(boolean b) {
+        endTurnButton.setEnabled(b);
     }
 }

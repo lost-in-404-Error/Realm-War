@@ -36,4 +36,9 @@ public class ForestBlock extends Block {
     public String getBlockType() {
         return "Forest";
     }
+
+    @Override
+    public boolean isForest() {
+        return true;
+    }
 }

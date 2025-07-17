@@ -4,6 +4,7 @@ import org.Game.controllers.GameController;
 import org.Game.models.GameState;
 import org.Game.models.Kingdom;
 import org.Game.models.Position;
+import org.Game.models.units.Unit;
 
 import javax.swing.*;
 import java.awt.*;
@@ -24,13 +25,16 @@ public class GameFrame extends JFrame {
 
     private Position selectedPosition;
 
+    private boolean moveMode = false;
+    private boolean attackMode = false;
+    private boolean mergeMode = false;
+
     public GameFrame(GameController controller) {
         this.gameController = controller;
 
         setTitle("Realm War");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
-
 
         gamePanel = new GamePanel(controller.getGameState());
         infoPanel = new InfoPanel();
@@ -54,37 +58,132 @@ public class GameFrame extends JFrame {
     private void setupListeners() {
         actionPanel.addEndTurnListener(e -> endTurn());
 
-        actionPanel.addRecruitListener(e -> {
-            JOptionPane.showMessageDialog(this, "Recruit menu opened.");
-
-        });
+        actionPanel.addRecruitListener(e -> JOptionPane.showMessageDialog(this, "Recruit menu opened."));
         actionPanel.addRecruitUnitListener("peasant", e -> tryRecruitUnit("peasant"));
         actionPanel.addRecruitUnitListener("spearman", e -> tryRecruitUnit("spearman"));
         actionPanel.addRecruitUnitListener("swordman", e -> tryRecruitUnit("swordman"));
         actionPanel.addRecruitUnitListener("knight", e -> tryRecruitUnit("knight"));
 
+        actionPanel.addMergeListener(e -> {
+            moveMode = false;
+            attackMode = false;
+            mergeMode = true;
+            gameController.setSelectedUnit(null);
+            gamePanel.setMoveMode(false);
+            gamePanel.setAttackMode(false);
+            gamePanel.setMergeMode(true);
+            actionPanel.setActionsEnabled(false);
+            actionPanel.setEndTurnEnabled(true);
+            JOptionPane.showMessageDialog(this, "Merge mode enabled. Select first unit.");
+        });
+
         actionPanel.addMoveListener(e -> {
+            moveMode = true;
+            attackMode = false;
+            mergeMode = false;
+            gameController.setSelectedUnit(null);
+            actionPanel.setActionsEnabled(false);
+            actionPanel.setEndTurnEnabled(true);
+            JOptionPane.showMessageDialog(this, "Move mode enabled. Select a unit to move.");
             gamePanel.setMoveMode(true);
+            gamePanel.setAttackMode(false);
+            gamePanel.setMergeMode(false);
         });
 
         actionPanel.addAttackListener(e -> {
-            JOptionPane.showMessageDialog(this, "Attack mode enabled.");
+            attackMode = true;
+            moveMode = false;
+            mergeMode = false;
+            gameController.setSelectedUnit(null);
+            gamePanel.setAttackMode(true);
+            gamePanel.setMoveMode(false);
+            gamePanel.setMergeMode(false);
+            actionPanel.setActionsEnabled(false);
+            actionPanel.setEndTurnEnabled(true);
+            JOptionPane.showMessageDialog(this, "Attack mode enabled. Select attacker.");
         });
 
-        actionPanel.addBuildStructureListener("farm", e -> {
-            tryBuildStructure("farm");
-        });
-
+        actionPanel.addBuildStructureListener("farm", e -> tryBuildStructure("farm"));
         actionPanel.addBuildStructureListener("barrack", e -> tryBuildStructure("barrack"));
         actionPanel.addBuildStructureListener("tower", e -> tryBuildStructure("tower"));
         actionPanel.addBuildStructureListener("market", e -> tryBuildStructure("market"));
 
-        actionPanel.setActionsEnabled(true);
-
-
         gamePanel.setPositionSelectListener(pos -> {
             selectedPosition = pos;
-            System.out.println("Selected position: " + pos.getX() + "," + pos.getY());
+            Kingdom currentKingdom = gameController.getGameState().getCurrentKingdom();
+            Unit clickedUnit = gameController.getGameState().getUnitAt(pos);
+
+            if (moveMode) {
+                if (gameController.getSelectedUnit() == null) {
+                    if (clickedUnit != null && clickedUnit.getKingdomId() == currentKingdom.getId()) {
+                        gameController.setSelectedUnit(clickedUnit);
+                        JOptionPane.showMessageDialog(this, "Unit selected. Now select destination to move.");
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Please select your own unit to move.");
+                    }
+                } else {
+                    boolean success = gameController.tryMoveUnit(gameController.getSelectedUnit(), pos);
+                    if (success) {
+                        JOptionPane.showMessageDialog(this, "Unit moved successfully.");
+                        moveMode = false;
+                        gameController.setSelectedUnit(null);
+                        gamePanel.setMoveMode(false);
+                        actionPanel.setActionsEnabled(true);
+                        updateInfoPanel();
+                        gamePanel.repaint();
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Move failed. Invalid destination.");
+                    }
+                }
+            } else if (attackMode) {
+                if (gameController.getSelectedUnit() == null) {
+                    if (clickedUnit != null && clickedUnit.getKingdomId() == currentKingdom.getId()) {
+                        gameController.setSelectedUnit(clickedUnit);
+                        JOptionPane.showMessageDialog(this, "Attacker selected. Now select target to attack.");
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Please select your own unit to attack.");
+                    }
+                } else {
+                    boolean success = gameController.tryAttack(gameController.getSelectedUnit().getPosition(), pos);
+                    if (success) {
+                        JOptionPane.showMessageDialog(this, "Attack successful.");
+                        attackMode = false;
+                        gameController.setSelectedUnit(null);
+                        gamePanel.setAttackMode(false);
+                        actionPanel.setActionsEnabled(true);
+                        updateInfoPanel();
+                        gamePanel.repaint();
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Attack failed.");
+                    }
+                }
+            } else if (mergeMode) {
+                if (gameController.getSelectedUnit() == null) {
+                    if (clickedUnit != null && clickedUnit.getKingdomId() == currentKingdom.getId()) {
+                        gameController.setSelectedUnit(clickedUnit);
+                        JOptionPane.showMessageDialog(this, "First unit selected. Now select the second unit to merge.");
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Please select one of your own units.");
+                    }
+                } else {
+                    if (clickedUnit != null && clickedUnit.getKingdomId() == currentKingdom.getId()) {
+                        boolean success = gameController.tryMerge(gameController.getSelectedUnit(), clickedUnit);
+                        if (success) {
+                            JOptionPane.showMessageDialog(this, "Units merged successfully.");
+                        } else {
+                            JOptionPane.showMessageDialog(this, "Merge failed. The units may not be of the same type.");
+                        }
+                        mergeMode = false;
+                        gameController.setSelectedUnit(null);
+                        gamePanel.setMergeMode(false);
+                        actionPanel.setActionsEnabled(true);
+                        updateInfoPanel();
+                        gamePanel.repaint();
+                    } else {
+                        JOptionPane.showMessageDialog(this, "The second unit must also be your own.");
+                    }
+                }
+            }
         });
     }
 
@@ -93,7 +192,6 @@ public class GameFrame extends JFrame {
             JOptionPane.showMessageDialog(this, "No position selected!", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
-
         boolean success = gameController.tryBuildStructure(type, selectedPosition);
         if (!success) {
             JOptionPane.showMessageDialog(this, "Failed to build " + type + ".", "Error", JOptionPane.ERROR_MESSAGE);
@@ -108,9 +206,7 @@ public class GameFrame extends JFrame {
             JOptionPane.showMessageDialog(this, "No position selected!", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
-
         boolean success = gameController.tryRecruitUnit(unitType, selectedPosition);
-
         if (!success) {
             JOptionPane.showMessageDialog(this, "Failed to recruit " + unitType + ".", "Error", JOptionPane.ERROR_MESSAGE);
         } else {
@@ -119,13 +215,11 @@ public class GameFrame extends JFrame {
         }
     }
 
-
     private void startTurnTimer() {
         turnSecondsLeft = TURN_TIME;
         turnTimer = new Timer(1000, e -> {
             turnSecondsLeft--;
             updateInfoPanel();
-
             if (turnSecondsLeft <= 0) {
                 endTurn();
             }
@@ -144,22 +238,20 @@ public class GameFrame extends JFrame {
     private void endTurn() {
         turnTimer.stop();
         resourceTimer.stop();
-
+        moveMode = false;
+        attackMode = false;
+        mergeMode = false;
+        gameController.setSelectedUnit(null);
         gameController.nextTurn();
-
         updateUIForCurrentPlayer();
-
         turnSecondsLeft = TURN_TIME;
         turnTimer.start();
         resourceTimer.start();
+        actionPanel.setActionsEnabled(true);
     }
 
     private void updateUIForCurrentPlayer() {
-        Kingdom currentKingdom = gameController.getGameState().getCurrentKingdom();
-        int playerId = currentKingdom.getId();
-
         actionPanel.setActionsEnabled(true);
-
         updateInfoPanel();
         gamePanel.repaint();
     }
@@ -173,7 +265,6 @@ public class GameFrame extends JFrame {
         GameState gameState = new GameState(15, 10, 2);
         GameController gameController = new GameController(gameState);
         gameController.startGame();
-
         SwingUtilities.invokeLater(() -> new GameFrame(gameController));
     }
 }

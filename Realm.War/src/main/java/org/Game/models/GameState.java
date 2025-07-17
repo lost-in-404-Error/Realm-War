@@ -16,6 +16,8 @@ public class GameState implements Serializable {
     private Block[][] gameMap;
     private int turnNumber;
     private boolean running;
+    private List<Structure> structures;
+
 
     private transient ScheduledExecutorService scheduler;
     private transient ScheduledFuture<?> resourceTask;
@@ -30,7 +32,7 @@ public class GameState implements Serializable {
         this.currentPlayerTurn = 0;
         this.turnNumber = 1;
         this.running = false;
-
+        this.structures = new ArrayList<>();
         initializeMap(mapWidth, mapHeight);
         initializeKingdoms(playerCount);
     }
@@ -176,8 +178,23 @@ public class GameState implements Serializable {
     }
 
     public void buildStructure(Structure s) {
+        if (s == null) return;
 
+        Block targetBlock = getBlockAt(s.getPosition());
+        if (targetBlock == null || targetBlock instanceof VoidBlock) return;
+
+        Kingdom owner = getKingdomById(s.getKingdomId());
+        if (owner == null || !owner.getOwnedBlocks().contains((CharSequence) targetBlock)) return;
+
+        if (canBuildStructure(s)) {
+            owner.decreaseResources(s.getCost());
+            targetBlock.setStructure(s);
+            owner.addStructure(s);
+            System.out.println("Structure built at " + s.getPosition());
+        }
     }
+
+
 
     public List<Unit> getUnitsInRange(Position position, int attackRange, int id) {
 
@@ -233,7 +250,31 @@ public class GameState implements Serializable {
         return null;
     }
 
-    public Block getBlockAt(Position destination) {
-        return null;
+    public Block getBlockAt(Position pos) {
+        int x = pos.getX();
+        int y = pos.getY();
+
+        if (x < 0 || x >= gameMap.length || y < 0 || y >= gameMap[0].length) {
+            return null;
+        }
+        return gameMap[x][y];
     }
+
+
+    public Unit getUnitAt(Position pos) {
+        Block block = getBlockAt(pos);
+        return (block != null) ? block.getUnit() : null;
+    }
+
+    public boolean isStructureAt(Position pos, int id) {
+        for (Structure structure : structures) {
+            if (structure.getPosition().equals(pos) && structure.getKingdomId() == id) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+
 }

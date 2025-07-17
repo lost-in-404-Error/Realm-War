@@ -171,4 +171,45 @@ public class Kingdom {
 
         return this;
     }
+
+
+
+    public void decreaseResources(int goldAmount, int foodAmount) {
+        decreaseGold(goldAmount);
+        decreaseFood(foodAmount);
+    }
+
+    public boolean hasEnoughResources(int goldAmount, int foodAmount) {
+        return this.gold >= goldAmount && this.food >= foodAmount;
+    }
+
+    public void removeUnit(Unit targetUnit) {
+        if (targetUnit != null && units.remove(targetUnit)) {
+            usedUnitSpace -= targetUnit.getUnitSpace();
+        }
+    }
+
+
+    public String getOwnedBlocks() {
+        StringBuilder sb = new StringBuilder();
+        for (Block block : absorbedBlocks) {
+            sb.append(block.getPosition().toString()).append(" ");
+        }
+        return sb.toString().trim();
+    }
+
+    public void decreaseResources(Object cost) {
+        if (cost instanceof Structure) {
+            Structure structure = (Structure) cost;
+            this.gold -= structure.getBuildCostGold();
+            this.food -= structure.getBuildCostFood();
+        } else if (cost instanceof Unit) {
+            Unit unit = (Unit) cost;
+            this.gold -= unit.getGoldCost();
+            this.food -= unit.getFoodCost();
+        }
+    }
+
+
+
 }
