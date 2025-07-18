@@ -6,14 +6,12 @@ import org.Game.models.blocks.VoidBlock;
 import org.Game.models.structures.*;
 import org.Game.models.units.*;
 
-import java.util.HashMap;
-import java.util.List;
-
 public class GameController {
     private final GameState gameState;
     private final StructureController structureController;
     private Unit selectedUnit;
     private Unit unitController;
+    private volatile boolean paused = false;
 
     public GameController(GameState gameState) {
         this.gameState = gameState;
@@ -24,12 +22,34 @@ public class GameController {
         gameState.startGame();
     }
 
+    public boolean isPaused() {
+        return paused;
+    }
+
+    public void pauseGame() {
+        paused = true;
+        gameState.pauseGame();
+    }
+
+    public void resumeGame() {
+        paused = false;
+        gameState.resumeGame();
+    }
+
     public void stopGame() {
         gameState.stopGame();
     }
 
     public void nextTurn() {
         gameState.endTurn();
+    }
+
+    public boolean isGameOver() {
+        return gameState.isGameOver();
+    }
+
+    public Kingdom getWinner() {
+        return gameState.getWinner();
     }
 
     public GameState getGameState() {
@@ -45,6 +65,7 @@ public class GameController {
         Block block = map[position.getX()][position.getY()];
         if (block == null || block instanceof VoidBlock) return false;
         if (!currentKingdom.getAbsorbedBlocks().contains(block)) return false;
+        if (block.getStructure() != null) return false;
 
         Structure structure = switch (type.toLowerCase()) {
             case "farm" -> new Farm(position, block, currentKingdom.getId());
@@ -61,8 +82,30 @@ public class GameController {
         boolean success = structureController.createStructure(structure);
         if (success) {
             currentKingdom.decreaseGold(structure.getBuildCostGold());
+            block.setStructure(structure);
         }
         return success;
+    }
+
+    public boolean tryRemoveStructure(Position position) {
+        if (position == null || !isPositionValid(position, gameState.getGameMap())) return false;
+
+        Block block = gameState.getBlockAt(position);
+        if (block == null || block.getStructure() == null) return false;
+
+        Structure structure = block.getStructure();
+
+
+        block.removeStructure();
+
+
+        Kingdom owner = gameState.getKingdomById(structure.getKingdomId());
+        if (owner != null) {
+            owner.removeStructure(structure);
+        }
+
+
+        return true;
     }
 
     public boolean tryRecruitUnit(String unitType, Position position) {
@@ -104,6 +147,21 @@ public class GameController {
         int dx = Math.abs(unit.getPosition().getX() - destination.getX());
         int dy = Math.abs(unit.getPosition().getY() - destination.getY());
         if (dx + dy > unit.getMovementRange()) return false;
+        Structure targetStructure = gameState.getStructureAt(destination);
+        if (targetStructure != null && targetStructure.getKingdomId() != unit.getKingdomId()) {
+
+            destBlock.setStructure(null);
+
+
+            gameState.removeStructure(targetStructure);
+
+
+            Kingdom enemy = gameState.getKingdomById(targetStructure.getKingdomId());
+            if (enemy != null) {
+                enemy.removeStructure(targetStructure);
+            }
+
+        }
 
         Block sourceBlock = gameState.getBlockAt(unit.getPosition());
         if (sourceBlock != null) sourceBlock.setUnit(null);
@@ -148,7 +206,6 @@ public class GameController {
         return true;
     }
 
-
     public boolean hasFriendlyUnitAt(Position pos) {
         Kingdom current = gameState.getCurrentKingdom();
         for (Unit unit : current.getUnits()) {
@@ -171,24 +228,18 @@ public class GameController {
     }
 
     public void startMoveMode() {
-
+        
     }
-
-
 
     public boolean tryMerge(Unit u1, Unit u2) {
         if (u1.canMergeWith(u2)) {
-
             Kingdom kingdom = gameState.getKingdomById(u1.getKingdomId());
             kingdom.getUnits().remove(u1);
             kingdom.getUnits().remove(u2);
 
-
             Unit mergedUnit = u1.mergeWith(u2);
 
-
             kingdom.getUnits().add(mergedUnit);
-
 
             gameState.getGameMap()[mergedUnit.getPosition().getX()][mergedUnit.getPosition().getY()].setUnit(mergedUnit);
 
@@ -197,5 +248,20 @@ public class GameController {
         return false;
     }
 
-
+    public boolean removeStructure(Position pos) {
+        for (Kingdom kingdom : gameState.getKingdoms()) {
+            Structure toRemove = null;
+            for (Structure structure : kingdom.getStructures()) {
+                if (structure.getPosition().equals(pos)) {
+                    toRemove = structure;
+                    break;
+                }
+            }
+            if (toRemove != null) {
+                kingdom.getStructures().remove(toRemove);
+                return true;
+            }
+        }
+        return false;
+    }
 }

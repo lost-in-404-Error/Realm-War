@@ -11,7 +11,7 @@ public class ActionPanel extends JPanel {
     private final JButton recruitButton;
     private final JButton moveButton;
     private final JButton attackButton;
-    private final JButton mergeButton;  // اضافه شد
+    private final JButton mergeButton;
 
     private final JPanel buildPanel;
     private final JPanel recruitPanel;
@@ -153,6 +153,8 @@ public class ActionPanel extends JPanel {
         return button;
     }
 
+
+
     public void addEndTurnListener(ActionListener listener) {
         endTurnButton.addActionListener(listener);
     }
@@ -213,4 +215,6 @@ public class ActionPanel extends JPanel {
     public void setEndTurnEnabled(boolean b) {
         endTurnButton.setEnabled(b);
     }
+
+
 }

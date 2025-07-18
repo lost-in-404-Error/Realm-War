@@ -22,6 +22,30 @@ public class StructureController {
     }
 
 
+
+
+    public boolean upgradeStructure(Structure structure) {
+        Kingdom kingdom = gameState.getKingdom(structure.getKingdomId());
+
+        if (structure == null || !structure.canUpgrade()) {
+            return false;
+        }
+
+        int upgradeCost = structure instanceof Farm ?
+                ((Farm) structure).getUpgradeCost() : 10;
+
+        if (kingdom.getGold() < upgradeCost) {
+            return false;
+        }
+
+
+        kingdom.subtractGold(upgradeCost);
+        structure.upgrade();
+
+        return true;
+    }
+
+
     public boolean createStructure(Structure structure) {
         Position pos = structure.getPosition();
         Block block = structure.getBaseBlock();
@@ -38,56 +62,24 @@ public class StructureController {
             return false;
         }
 
-
         kingdom.subtractGold(goldCost);
         kingdom.subtractFood(foodCost);
 
-
-        structures.add(structure);
-        block.setStructure(structure);
-        kingdom.addStructure(structure);
+        gameState.addStructure(structure);
 
         return true;
     }
-
-    public boolean upgradeStructure(Structure structure) {
-        Kingdom kingdom = gameState.getKingdom(structure.getKingdomId());
-
-        if (structure == null || !structure.canUpgrade()) {
-            return false;
-        }
-
-        int upgradeCost = structure instanceof Farm ?
-                ((Farm) structure).getUpgradeCost() : 10; // fallback cost
-
-        if (kingdom.getGold() < upgradeCost) {
-            return false;
-        }
-
-
-        kingdom.subtractGold(upgradeCost);
-        structure.upgrade();
-
-        return true;
-    }
-
 
     public boolean removeStructure(Position position) {
-        Iterator<Structure> iterator = structures.iterator();
-        while (iterator.hasNext()) {
-            Structure s = iterator.next();
-            if (s.getPosition().equals(position)) {
-                Block block = s.getBaseBlock();
-                Kingdom kingdom = gameState.getKingdom(s.getKingdomId());
-
-                block.setStructure(null);
-                kingdom.removeStructure(s);
-                iterator.remove();
-                return true;
-            }
+        Structure s = findStructureAt(position);
+        if (s != null) {
+            gameState.removeStructure(s);
+            return true;
         }
         return false;
     }
+
+
 
 
     public Structure findStructureAt(Position position) {

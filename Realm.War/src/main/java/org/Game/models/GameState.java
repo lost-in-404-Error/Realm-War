@@ -25,6 +25,7 @@ public class GameState implements Serializable {
 
     private static final int RESOURCE_INTERVAL = 3;  // seconds
     private static final int TURN_DURATION = 30;     // seconds
+    private volatile boolean paused = false;
 
     public GameState(int mapWidth, int mapHeight, int playerCount) {
         this.kingdoms = new ArrayList<>();
@@ -92,6 +93,22 @@ public class GameState implements Serializable {
 
 
     public void nextTurn() {
+        checkAndRemoveDestroyedStructures();
+        if (isGameOver()) {
+            Kingdom winner = getWinner();
+            stopGame();
+
+            if (winner != null) {
+                System.out.println("🏆 GAME OVER! Winner is Kingdom #" + winner.getId());
+
+            } else {
+                System.out.println("🏴 GAME OVER! No winner (all TownHalls destroyed)");
+            }
+
+            return;
+        }
+
+
         currentPlayerTurn = (currentPlayerTurn + 1) % kingdoms.size();
 
         if (currentPlayerTurn == 0) {
@@ -104,6 +121,18 @@ public class GameState implements Serializable {
         System.out.println("Turn " + turnNumber + ": Player " + (currentPlayerTurn + 1) + "'s turn.");
     }
 
+    public void pauseGame() {
+        paused = true;
+    }
+
+    public void resumeGame() {
+        paused = false;
+    }
+
+    public boolean isPaused() {
+        return paused;
+    }
+
 
     public void startGame() {
         if (running) return;
@@ -112,29 +141,28 @@ public class GameState implements Serializable {
         scheduler = Executors.newScheduledThreadPool(2);
 
         resourceTask = scheduler.scheduleAtFixedRate(() -> {
-            if (!running) return;
+            if (!running || paused) return;
             Kingdom currentKingdom = getCurrentKingdom();
             currentKingdom.updateResources();
             System.out.println("Resources updated for Player " + (currentPlayerTurn + 1));
         }, 0, RESOURCE_INTERVAL, TimeUnit.SECONDS);
 
         turnTask = scheduler.scheduleAtFixedRate(() -> {
-            if (!running) return;
+            if (!running || paused) return;
             System.out.println("Turn time expired for Player " + (currentPlayerTurn + 1));
             endTurn();
         }, TURN_DURATION, TURN_DURATION, TimeUnit.SECONDS);
 
-        kingdoms.get(currentPlayerTurn).startTurn(this);
-        System.out.println("Game started. Player " + (currentPlayerTurn + 1) + " begins.");
     }
 
     public void stopGame() {
         running = false;
         if (resourceTask != null) resourceTask.cancel(true);
-        if (turnTask != null) resourceTask.cancel(true);
+        if (turnTask != null) turnTask.cancel(true);
         if (scheduler != null) scheduler.shutdownNow();
         System.out.println("Game stopped.");
     }
+
 
     public void endTurn() {
         nextTurn();
@@ -177,6 +205,41 @@ public class GameState implements Serializable {
 
     }
 
+    public List<Structure> getStructures() {
+        return structures;
+    }
+
+    public void addStructure(Structure s) {
+        if (s == null) return;
+
+        structures.add(s);
+        Kingdom owner = getKingdom(s.getKingdomId());
+        if (owner != null) {
+            owner.addStructure(s);
+        }
+        Block block = getBlockAt(s.getPosition());
+        if (block != null) {
+            block.setStructure(s);
+        }
+    }
+
+    public void removeStructure(Structure s) {
+        if (s == null) return;
+
+        Block block = getBlockAt(s.getPosition());
+        if (block != null) {
+            block.removeStructure();
+        }
+
+        Kingdom owner = getKingdom(s.getKingdomId());
+        if (owner != null) {
+            owner.removeStructure(s);
+        }
+
+        structures.remove(s);
+    }
+
+
     public void buildStructure(Structure s) {
         if (s == null) return;
 
@@ -208,6 +271,34 @@ public class GameState implements Serializable {
         }
         return allUnits;
     }
+    public boolean isGameOver() {
+        int kingdomsWithTownHall = 0;
+
+        for (Kingdom kingdom : kingdoms) {
+            boolean hasTownHall = kingdom.getStructures().stream()
+                    .anyMatch(s -> s instanceof TownHall && !s.isDestroyed());
+
+            if (hasTownHall) {
+                kingdomsWithTownHall++;
+            }
+        }
+
+        return kingdomsWithTownHall <= 1;
+    }
+
+    public Kingdom getWinner() {
+        if (!isGameOver()) return null;
+
+        for (Kingdom kingdom : kingdoms) {
+            boolean hasTownHall = kingdom.getStructures().stream()
+                    .anyMatch(s -> s instanceof TownHall && !s.isDestroyed());
+
+            if (hasTownHall) return kingdom;
+        }
+
+        return null;
+    }
+
 
     public void saveGameState(String filePath) {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath))) {
@@ -275,6 +366,47 @@ public class GameState implements Serializable {
         return false;
     }
 
+    public void checkAndRemoveDestroyedStructures() {
+        for (Kingdom kingdom : kingdoms) {
+            List<Structure> toRemove = new ArrayList<>();
+
+            for (Structure s : kingdom.getStructures()) {
+                if (s.isDestroyed()) {
+
+                    Block block = getBlockAt(s.getPosition());
+                    if (block != null) {
+                        block.removeStructure();
+                    }
+
+                    toRemove.add(s);
+                    System.out.println("Structure destroyed at " + s.getPosition());
+                }
+            }
+
+
+            for (Structure s : toRemove) {
+                kingdom.removeStructure(s);
+            }
+        }
+    }
+
+    public void removeDestroyedStructures() {
+        List<Structure> toRemove = new ArrayList<>();
+        for (Structure s : structures) {
+            if (s.isDestroyed()) {
+                s.onDestroyed(this);
+                toRemove.add(s);
+            }
+        }
+        structures.removeAll(toRemove);
+    }
+
+    public Structure getStructureAt(Position pos) {
+        for (Structure s : structures) {
+            if (s.getPosition().equals(pos)) return s;
+        }
+        return null;
+    }
 
 
 }

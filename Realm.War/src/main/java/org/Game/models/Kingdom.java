@@ -62,11 +62,11 @@ public class Kingdom {
         }
     }
 
-    public void removeStructure(Structure structure) {
-        if (structures.remove(structure)) {
-            totalUnitSpace -= structure.getUnitSpace();
+
+        public void removeStructure(Structure structure) {
+            structures.remove(structure);
         }
-    }
+
 
     public void addUnit(Unit unit) {
         if (usedUnitSpace + unit.getUnitSpace() > totalUnitSpace) {
@@ -90,7 +90,7 @@ public class Kingdom {
         this.food += 3;
     }
 
-    // --- Getters & Setters ---
+
     public int getId() {
         return id;
     }
@@ -209,7 +209,9 @@ public class Kingdom {
             this.food -= unit.getFoodCost();
         }
     }
-
+    public boolean hasUnitsOrStructures() {
+        return !units.isEmpty() || !structures.isEmpty();
+    }
 
 
 }

@@ -8,7 +8,7 @@ public abstract class Block {
     protected Position position;
     protected boolean walkable;
     protected boolean absorbed;
-    protected int kingdomId; // -1 means no owner
+    protected int kingdomId;
 
     private Structure structure;
     private Unit unit;
@@ -86,5 +86,9 @@ public abstract class Block {
     }
     public boolean isOccupied() {
         return unit != null;
+    }
+
+    public void removeStructure() {
+        this.structure = null;
     }
 }

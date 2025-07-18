@@ -196,6 +196,7 @@ public class GamePanel extends JPanel {
                             JOptionPane.showMessageDialog(this, "Unit moved successfully.");
                             selectedUnit = null;
                             currentAction = "";
+                            repaint();
                         } else {
                             JOptionPane.showMessageDialog(this, "Move failed. Try again.");
                         }
@@ -204,7 +205,8 @@ public class GamePanel extends JPanel {
                     JOptionPane.showMessageDialog(this, "Invalid move. Try again.");
                 }
             }
-        } else if ("attack".equals(currentAction)) {
+
+    } else if ("attack".equals(currentAction)) {
             if (selectedUnit == null) {
                 if (clickedUnit != null && clickedUnit.getKingdomId() == gameState.getCurrentKingdom().getId()) {
                     selectedUnit = clickedUnit;
@@ -240,40 +242,42 @@ public class GamePanel extends JPanel {
                 }
             }
         }
-                if ("merge".equals(currentAction)) {
-                    if (selectedUnit == null) {
-                        if (clickedUnit != null && clickedUnit.getKingdomId() == gameState.getCurrentKingdom().getId()) {
-                            selectedUnit = clickedUnit;
-                            JOptionPane.showMessageDialog(this, "Unit selected. Now select unit to merge with.");
+        if ("merge".equals(currentAction)) {
+            if (selectedUnit == null) {
+                if (clickedUnit != null && clickedUnit.getKingdomId() == gameState.getCurrentKingdom().getId()) {
+                    selectedUnit = clickedUnit;
+                    JOptionPane.showMessageDialog(this, "Unit selected. Now select unit to merge with.");
+                } else {
+                    JOptionPane.showMessageDialog(this, "Please select one of your own units to merge.");
+                }
+            } else {
+                if (clickedUnit != null && clickedUnit != selectedUnit &&
+                        clickedUnit.getKingdomId() == selectedUnit.getKingdomId()) {
+
+                    if (selectedUnit.canMergeWith(clickedUnit)) {
+                        boolean merged = controller.tryMerge(selectedUnit, clickedUnit);
+                        if (merged) {
+                            JOptionPane.showMessageDialog(this, "Units merged successfully.");
+                            selectedUnit = null;
+                            currentAction = "";
+                            repaint();
                         } else {
-                            JOptionPane.showMessageDialog(this, "Please select one of your own units to merge.");
+                            JOptionPane.showMessageDialog(this, "Merge failed.");
                         }
                     } else {
-                        if (clickedUnit != null && clickedUnit != selectedUnit &&
-                                clickedUnit.getKingdomId() == selectedUnit.getKingdomId()) {
-
-                            if (selectedUnit.canMergeWith(clickedUnit)) {
-                                boolean merged = controller.tryMerge(selectedUnit, clickedUnit);
-                                if (merged) {
-                                    JOptionPane.showMessageDialog(this, "Units merged successfully.");
-                                    selectedUnit = null;
-                                    currentAction = "";
-                                    repaint();
-                                } else {
-                                    JOptionPane.showMessageDialog(this, "Merge failed.");
-                                }
-                            } else {
-                                JOptionPane.showMessageDialog(this, "These units cannot be merged.");
-                            }
-                        } else {
-                            JOptionPane.showMessageDialog(this, "Select a valid second unit to merge with.");
-                        }
+                        JOptionPane.showMessageDialog(this, "These units cannot be merged.");
                     }
                 } else {
+                    JOptionPane.showMessageDialog(this, "Select a valid second unit to merge with.");
+                }
+            }
+        } else {
             System.out.println("Clicked on: " + x + "," + y);
         }
 
         repaint();
+        checkGameOver();
+
     }
 
 
@@ -286,35 +290,27 @@ public class GamePanel extends JPanel {
 
         for (int x = 0; x < map.length; x++) {
             for (int y = 0; y < map[0].length; y++) {
-                Block block = map[x][y];
-
-
-
-                if (block.getUnit() != null) {
-                    Unit unit = block.getUnit();
-                    Image icon = getIconForUnit(unit);
-
-                    g.drawImage(icon, x * TILE_SIZE, y * TILE_SIZE, null);
-                }
-            }
-        }
-        for (int x = 0; x < map.length; x++) {
-            for (int y = 0; y < map[0].length; y++) {
                 drawBlock(g, map[x][y], x * BLOCK_SIZE, y * BLOCK_SIZE);
             }
         }
 
-        for (Kingdom kingdom : gameState.getKingdoms()) {
-            for (Structure structure : kingdom.getStructures()) {
-                drawStructure(g, structure);
+
+        for (int x = 0; x < map.length; x++) {
+            for (int y = 0; y < map[0].length; y++) {
+                Structure structure = map[x][y].getStructure();
+                if (structure != null) {
+                    drawStructure(g, structure, x * BLOCK_SIZE, y * BLOCK_SIZE);
+                }
             }
         }
+
 
         for (Kingdom kingdom : gameState.getKingdoms()) {
             for (Unit unit : kingdom.getUnits()) {
                 drawUnit(g, unit);
             }
         }
+
 
         if ("move".equals(currentAction) && selectedUnit != null) {
             highlightMovementRange(g, selectedUnit);
@@ -323,11 +319,12 @@ public class GamePanel extends JPanel {
         if ("attack".equals(currentAction) && selectedUnit != null) {
             highlightAttackRange(g, selectedUnit);
         }
+
         if ("merge".equals(currentAction) && selectedUnit != null) {
             highlightMergeOptions(g, selectedUnit);
         }
-
     }
+
     private void highlightMergeOptions(Graphics g, Unit unit) {
         g.setColor(new Color(255, 255, 0, 80));
 
@@ -379,11 +376,7 @@ public class GamePanel extends JPanel {
         g.drawRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
     }
 
-    private void drawStructure(Graphics g, Structure structure) {
-        Position pos = structure.getPosition();
-        int x = pos.getX() * BLOCK_SIZE;
-        int y = pos.getY() * BLOCK_SIZE;
-
+    private void drawStructure(Graphics g, Structure structure, int x, int y) {
         Image img = switch (structure) {
             case Farm ignored -> farmImage;
             case Barrack ignored -> barrackImage;
@@ -475,6 +468,30 @@ public class GamePanel extends JPanel {
         this.repaint();
     }
 
+    private void checkGameOver() {
+        if (gameState.isGameOver()) {
+            Kingdom winner = gameState.getWinner();
+            String message;
+            if (winner != null) {
+                message = "Game Over! Winner: Player " + winner.getId();
+            } else {
+                message = "The game ended in a draw!";
+            }
+
+            JOptionPane.showMessageDialog(this, message);
+            currentAction = "";
+            selectedUnit = null;
+            repaint();
+
+            // If you want to reset or exit the game
+            // int option = JOptionPane.showConfirmDialog(this, "Do you want to start a new game?", "Restart", JOptionPane.YES_NO_OPTION);
+            // if (option == JOptionPane.YES_OPTION) {
+            //     controller.resetGame();
+            // } else {
+            //     System.exit(0);
+            // }
+        }
+    }
 
 
 
