@@ -2,7 +2,9 @@ package org.Game.models.units;
 
 import org.Game.models.Position;
 
-public abstract class Unit {
+import java.io.Serializable;
+
+public abstract class Unit  implements Serializable {
     protected String name;
     protected int hitPoints;
     protected int maxHitPoints;

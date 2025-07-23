@@ -6,9 +6,10 @@ import org.Game.models.Position;
 import org.Game.models.blocks.Block;
 import org.Game.models.units.Unit;
 
+import java.io.Serializable;
 import java.util.List;
 
-public  class Tower extends Structure {
+public  class Tower extends Structure implements Serializable {
     private static final int MAX_LEVEL = 3;
     private static final int[] ATTACK_POWER_BY_LEVEL = {10, 15, 20};
     private static final int[] DURABILITY_BY_LEVEL = {100, 150, 200};

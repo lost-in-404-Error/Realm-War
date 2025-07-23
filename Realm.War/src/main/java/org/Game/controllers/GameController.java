@@ -5,17 +5,24 @@ import org.Game.models.blocks.Block;
 import org.Game.models.blocks.VoidBlock;
 import org.Game.models.structures.*;
 import org.Game.models.units.*;
+import org.Game.views.GamePanel;
+
+import java.util.ArrayList;
 
 public class GameController {
-    private final GameState gameState;
+    private GameState gameState;
     private final StructureController structureController;
     private Unit selectedUnit;
-    private Unit unitController;
     private volatile boolean paused = false;
+    private GamePanel gamePanel;
 
     public GameController(GameState gameState) {
         this.gameState = gameState;
         this.structureController = new StructureController(gameState);
+    }
+
+    public void setGamePanel(GamePanel gamePanel) {
+        this.gamePanel = gamePanel;
     }
 
     public void startGame() {
@@ -36,8 +43,12 @@ public class GameController {
         gameState.resumeGame();
     }
 
-    public void stopGame() {
-        gameState.stopGame();
+    public void resetGame() {
+        if (gameState != null) {
+            gameState.stopGame();
+        }
+        gameState = new GameState(15, 10, 2);
+        gameState.startGame();
     }
 
     public void nextTurn() {
@@ -83,7 +94,9 @@ public class GameController {
         if (success) {
             currentKingdom.decreaseGold(structure.getBuildCostGold());
             block.setStructure(structure);
+            if (gamePanel != null) gamePanel.repaint();
         }
+
         return success;
     }
 
@@ -95,15 +108,12 @@ public class GameController {
 
         Structure structure = block.getStructure();
 
-
         block.removeStructure();
-
 
         Kingdom owner = gameState.getKingdomById(structure.getKingdomId());
         if (owner != null) {
             owner.removeStructure(structure);
         }
-
 
         return true;
     }
@@ -147,20 +157,12 @@ public class GameController {
         int dx = Math.abs(unit.getPosition().getX() - destination.getX());
         int dy = Math.abs(unit.getPosition().getY() - destination.getY());
         if (dx + dy > unit.getMovementRange()) return false;
+
         Structure targetStructure = gameState.getStructureAt(destination);
         if (targetStructure != null && targetStructure.getKingdomId() != unit.getKingdomId()) {
-
-            destBlock.setStructure(null);
-
-
-            gameState.removeStructure(targetStructure);
-
-
-            Kingdom enemy = gameState.getKingdomById(targetStructure.getKingdomId());
-            if (enemy != null) {
-                enemy.removeStructure(targetStructure);
-            }
-
+            targetStructure.setDestroyed(true);
+            gameState.removeDestroyedStructures();
+            if (gamePanel != null) gamePanel.repaint();
         }
 
         Block sourceBlock = gameState.getBlockAt(unit.getPosition());
@@ -227,10 +229,6 @@ public class GameController {
         this.selectedUnit = selectedUnit;
     }
 
-    public void startMoveMode() {
-        
-    }
-
     public boolean tryMerge(Unit u1, Unit u2) {
         if (u1.canMergeWith(u2)) {
             Kingdom kingdom = gameState.getKingdomById(u1.getKingdomId());
@@ -248,20 +246,11 @@ public class GameController {
         return false;
     }
 
-    public boolean removeStructure(Position pos) {
-        for (Kingdom kingdom : gameState.getKingdoms()) {
-            Structure toRemove = null;
-            for (Structure structure : kingdom.getStructures()) {
-                if (structure.getPosition().equals(pos)) {
-                    toRemove = structure;
-                    break;
-                }
-            }
-            if (toRemove != null) {
-                kingdom.getStructures().remove(toRemove);
-                return true;
-            }
-        }
-        return false;
+    public ArrayList<Player> getWinners() {
+        return null;
+    }
+
+    public void setGameState(GameState loadedState) {
+        this.gameState = loadedState;
     }
 }

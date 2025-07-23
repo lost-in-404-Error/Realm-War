@@ -5,7 +5,10 @@ import org.Game.models.blocks.Block;
 import org.Game.models.GameState;
 import org.Game.models.Kingdom;
 
-public class Barrack extends Structure {
+import java.io.Serializable;
+
+public class Barrack extends Structure implements Serializable {
+
 
     private static final int[] UNIT_SPACE_BY_LEVEL = {5, 8, 12};
     private static final int[] DURABILITY_BY_LEVEL = {50, 75, 100};

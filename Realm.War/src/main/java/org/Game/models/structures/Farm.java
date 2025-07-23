@@ -5,7 +5,9 @@ import org.Game.models.blocks.Block;
 import org.Game.models.GameState;
 import org.Game.models.Kingdom;
 
-public class Farm extends Structure {
+import java.io.Serializable;
+
+public class Farm extends Structure implements Serializable {
 
     private static final int[] FOOD_PRODUCTION_BY_LEVEL = {5, 10, 15};
     private static final int[] DURABILITY_BY_LEVEL = {40, 55, 70};

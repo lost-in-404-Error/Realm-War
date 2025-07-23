@@ -4,7 +4,9 @@ import org.Game.models.Position;
 import org.Game.models.structures.Structure;
 import org.Game.models.units.Unit;
 
-public abstract class Block {
+import java.io.Serializable;
+
+public abstract class Block implements Serializable {
     protected Position position;
     protected boolean walkable;
     protected boolean absorbed;
@@ -87,8 +89,16 @@ public abstract class Block {
     public boolean isOccupied() {
         return unit != null;
     }
-
     public void removeStructure() {
-        this.structure = null;
+        if (this.structure != null) {
+            this.structure.setDestroyed(true);
+            this.structure = null;
+        }
     }
+
+
+    public void setOwnerID(int kingdomId) {
+        this.kingdomId = kingdomId;
+    }
+
 }

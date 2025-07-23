@@ -2,7 +2,9 @@ package org.Game.models.blocks;
 
 import org.Game.models.Position;
 
-public class VoidBlock extends Block {
+import java.io.Serializable;
+
+public class VoidBlock extends Block implements Serializable {
     public VoidBlock(Position position) {
         super(position, false);
     }

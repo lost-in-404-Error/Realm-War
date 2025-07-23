@@ -5,7 +5,9 @@ import org.Game.models.Kingdom;
 import org.Game.models.Position;
 import org.Game.models.blocks.Block;
 
-public class Market extends Structure {
+import java.io.Serializable;
+
+public class Market extends Structure implements Serializable {
 
     private static final int[] GOLD_PRODUCTION_BY_LEVEL = {5, 10, 15};
     private static final int[] DURABILITY_BY_LEVEL = {50, 75, 100};

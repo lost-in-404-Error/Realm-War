@@ -2,7 +2,9 @@ package org.Game.models.blocks;
 
 import org.Game.models.Position;
 
-public class EmptyBlock extends Block {
+import java.io.Serializable;
+
+public class EmptyBlock extends Block implements Serializable {
     private static final int GOLD_GENERATION = 10;
     private static final int FOOD_GENERATION = 0;
 

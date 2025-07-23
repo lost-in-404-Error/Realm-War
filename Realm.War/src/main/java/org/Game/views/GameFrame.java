@@ -30,17 +30,19 @@ public class GameFrame extends JFrame {
     private boolean mergeMode = false;
     private boolean gamePaused = false;
 
-    public GameFrame(GameController controller) {
+    public GameFrame(GameController controller, GamePanel panel) {
         this.gameController = controller;
-
+        this.gamePanel = panel;
         setTitle("Realm War");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        gamePanel = new GamePanel(controller.getGameState());
+
         infoPanel = new InfoPanel();
         actionPanel = new ActionPanel();
         menuPanel = new MenuPanel();
+        MenuPanel menuPanel = new MenuPanel();
+        menuPanel.setGameControllerAndPanel(gameController, gamePanel);
 
         setJMenuBar(menuPanel.getMenuBar());
         add(gamePanel, BorderLayout.CENTER);
@@ -109,6 +111,7 @@ public class GameFrame extends JFrame {
             actionPanel.setEndTurnEnabled(true);
             JOptionPane.showMessageDialog(this, "Attack mode enabled. Select attacker.");
         });
+
 
         actionPanel.addBuildStructureListener("farm", e -> tryBuildStructure("farm"));
         actionPanel.addBuildStructureListener("barrack", e -> tryBuildStructure("barrack"));
@@ -234,6 +237,9 @@ public class GameFrame extends JFrame {
         }
     }
 
+
+
+
     private void startTurnTimer() {
         turnSecondsLeft = TURN_TIME;
         turnTimer = new Timer(1000, e -> {
@@ -309,9 +315,16 @@ public class GameFrame extends JFrame {
 
 
     public static void main(String[] args) {
-        GameState gameState = new GameState(5, 5, 2);
+        GameState gameState = new GameState(8, 5, 2);
         GameController gameController = new GameController(gameState);
+
+        GamePanel gamePanel = new GamePanel(gameState);
+
+        gameController.setGamePanel(gamePanel);
+
         gameController.startGame();
-        SwingUtilities.invokeLater(() -> new GameFrame(gameController));
+
+        SwingUtilities.invokeLater(() -> new GameFrame(gameController, gamePanel));
     }
+
 }

@@ -5,10 +5,11 @@ import org.Game.models.structures.Structure;
 import org.Game.models.structures.TownHall;
 import org.Game.models.units.Unit;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Kingdom {
+public class Kingdom implements Serializable {
     private final int id;
     private int gold;
     private int food;
@@ -19,6 +20,9 @@ public class Kingdom {
     private final List<Unit> units;
     private final List<Block> absorbedBlocks;
     private GameState gameState;
+    private List<Integer> structureIds;
+
+
 
     public Kingdom(int id, TownHall townHall) {
         this.id = id;
@@ -33,6 +37,8 @@ public class Kingdom {
         this.gold = 20;
         this.food = 20;
     }
+
+
 
     public void startTurn(GameState gameState) {
         for (Structure structure : structures) {
@@ -63,9 +69,9 @@ public class Kingdom {
     }
 
 
-        public void removeStructure(Structure structure) {
-            structures.remove(structure);
-        }
+    public void removeStructure(Structure structure) {
+        structures.remove(structure);
+    }
 
 
     public void addUnit(Unit unit) {
@@ -211,6 +217,13 @@ public class Kingdom {
     }
     public boolean hasUnitsOrStructures() {
         return !units.isEmpty() || !structures.isEmpty();
+    }
+    public void setOwnedBlocksFromString(String data) {
+        if (data == null || data.isEmpty()) return;
+        String[] parts = data.split(",");
+        for (String part : parts) {
+
+        }
     }
 
 

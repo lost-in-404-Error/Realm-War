@@ -2,7 +2,9 @@ package org.Game.models.units;
 
 import org.Game.models.Position;
 
-public class Peasant extends Unit {
+import java.io.Serializable;
+
+public class Peasant extends Unit implements Serializable {
 
     public Peasant(Position position, int kingdomId) {
         super(30, 2, 5, 1, 2, 1, 1, position, kingdomId);

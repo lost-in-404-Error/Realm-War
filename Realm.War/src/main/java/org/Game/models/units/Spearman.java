@@ -2,7 +2,9 @@ package org.Game.models.units;
 
 import org.Game.models.Position;
 
-public class Spearman extends Unit {
+import java.io.Serializable;
+
+public class Spearman extends Unit implements Serializable {
 
     public Spearman(Position position, int kingdomId) {
         super(50, 2, 10, 1, 4, 2, 2, position, kingdomId);

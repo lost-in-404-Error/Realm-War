@@ -2,14 +2,24 @@ package org.Game.views;
 
 
 
+import org.Game.controllers.GameController;
+import org.Game.models.GameState;
+import org.Game.models.Kingdom;
+import org.Game.models.Player;
+import org.Game.utils.DatabaseManager;
+
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.Color;
 import javax.swing.Timer;
 import java.awt.Component;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MenuPanel extends JPanel {
+
+    private  GamePanel gamePanel;
     private JMenuBar menuBar;
     private JMenu gameMenu;
     private JMenuItem newGameItem;
@@ -21,6 +31,8 @@ public class MenuPanel extends JPanel {
 
     private ActionListener onStopListener;
     private ActionListener onResumeListener;
+    private GameController gameController;
+
 
     public void setOnStopListener(ActionListener listener) {
         this.onStopListener = listener;
@@ -82,38 +94,65 @@ public class MenuPanel extends JPanel {
             }
         });
 
+        newGameItem.addActionListener(e -> {
+            if (gameController != null && gamePanel != null) {
+                gameController.resetGame();
+                gamePanel.setGameState(gameController.getGameState());
+                gamePanel.repaint();
 
-        newGameItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-
-                System.out.println("New Game selected");
+                JOptionPane.showMessageDialog(null, "🎮 New game started!");
+            } else {
+                System.err.println("❌ gameController or gamePanel is not initialized!");
             }
         });
 
-        loadGameItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
 
-                System.out.println("Load Game selected");
+        saveGameItem.addActionListener(e -> {
+            if (gameController == null || gameController.getGameState() == null) {
+                JOptionPane.showMessageDialog(null, "❌ GameController or GameState is not initialized.");
+                return;
+            }
+
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("Save Game");
+
+            int userSelection = fileChooser.showSaveDialog(null);
+
+            if (userSelection == JFileChooser.APPROVE_OPTION) {
+                String filePath = fileChooser.getSelectedFile().getAbsolutePath();
+                gameController.getGameState().saveGameState(filePath);
+                JOptionPane.showMessageDialog(null, "✅ Game saved to file: " + filePath);
             }
         });
 
-        saveGameItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
+        loadGameItem.addActionListener(e -> {
+            if (gameController == null) {
+                JOptionPane.showMessageDialog(null, "❌ GameController is not initialized.");
+                return;
+            }
 
-                System.out.println("Save Game selected");
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("Load Game");
+
+            int userSelection = fileChooser.showOpenDialog(null);
+
+            if (userSelection == JFileChooser.APPROVE_OPTION) {
+                String filePath = fileChooser.getSelectedFile().getAbsolutePath();
+                GameState loadedState = GameState.loadGameState(filePath);
+                if (loadedState != null) {
+                    gameController.setGameState(loadedState);
+                    gamePanel.setGameState(loadedState);
+                    gamePanel.repaint();
+
+                    JOptionPane.showMessageDialog(null, "✅ Game loaded from file: " + filePath);
+                    System.out.println("Game loaded successfully.");
+                } else {
+                    JOptionPane.showMessageDialog(null, "❌ Failed to load game.");
+                }
             }
         });
 
-        exitItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
 
-                System.exit(0);
-            }
-        });
 
 
         fadeInMenu();
@@ -165,4 +204,9 @@ public class MenuPanel extends JPanel {
     public JMenuBar getMenuBar() {
         return menuBar;
     }
+    public void setGameControllerAndPanel(GameController controller, GamePanel panel) {
+        this.gameController = controller;
+        this.gamePanel = panel;
+    }
+
 }

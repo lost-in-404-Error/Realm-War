@@ -5,14 +5,16 @@ import org.Game.models.Kingdom;
 import org.Game.models.Position;
 import org.Game.models.blocks.Block;
 
-public class TownHall extends Structure {
+import java.io.Serializable;
+
+public class TownHall extends Structure implements Serializable {
     private static final int MAX_LEVEL = 1;
     private static final int INITIAL_DURABILITY = 50;
     private static final int MAINTENANCE_COST = 0;
     private static final int GOLD_PRODUCTION = 5;
     private static final int FOOD_PRODUCTION = 5;
     private static final int UNIT_SPACE = 5;
-    private int kingdomId;
+
 
     public TownHall(Position position, Block baseBlock, int kingdomId) {
         super(MAX_LEVEL, INITIAL_DURABILITY, MAINTENANCE_COST, position, baseBlock, kingdomId);
@@ -59,11 +61,5 @@ public class TownHall extends Structure {
         return 0;
     }
 
-    public void setKingdomId(int kingdomId) {
-        this.kingdomId = kingdomId;
-    }
 
-    public int getKingdomId() {
-        return kingdomId;
-    }
 }

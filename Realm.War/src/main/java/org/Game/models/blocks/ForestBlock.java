@@ -2,7 +2,9 @@ package org.Game.models.blocks;
 
 import org.Game.models.Position;
 
-public class ForestBlock extends Block {
+import java.io.Serializable;
+
+public class ForestBlock extends Block implements Serializable {
     public ForestBlock(Position position) {
         super(position, true);
     }

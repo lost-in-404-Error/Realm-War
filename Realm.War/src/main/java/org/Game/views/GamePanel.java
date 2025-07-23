@@ -281,6 +281,7 @@ public class GamePanel extends JPanel {
     }
 
 
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -298,9 +299,10 @@ public class GamePanel extends JPanel {
         for (int x = 0; x < map.length; x++) {
             for (int y = 0; y < map[0].length; y++) {
                 Structure structure = map[x][y].getStructure();
-                if (structure != null) {
+                if (structure != null && !structure.isDestroyed()) {
                     drawStructure(g, structure, x * BLOCK_SIZE, y * BLOCK_SIZE);
                 }
+
             }
         }
 
@@ -398,7 +400,7 @@ public class GamePanel extends JPanel {
 
         g.setColor(Color.YELLOW);
         g.setFont(new Font("Arial", Font.BOLD, 12));
-        g.drawString("P" + structure.getKingdomID(), x + 12, y + BLOCK_SIZE - 12);
+        g.drawString("P" + structure.getKingdomId(), x + 12, y + BLOCK_SIZE - 12);
     }
 
     private void drawUnit(Graphics g, Unit unit) {
@@ -421,10 +423,19 @@ public class GamePanel extends JPanel {
             g.fillRect(x + 10, y + 10, 30, 30);
         }
 
+
         g.setColor(Color.RED);
         int hpWidth = (int) ((BLOCK_SIZE - 4) * ((double) unit.getHitPoints() / unit.getMaxHitPoints()));
         g.fillRect(x + 2, y + BLOCK_SIZE - 8, hpWidth, 4);
+
+
+
+        g.setColor(Color.BLACK);
+        g.setFont(new Font("Arial", Font.BOLD, 12));
+        g.drawString("P" + unit.getKingdomId(), x + 6, y + BLOCK_SIZE - 12);
+
     }
+
 
     private void highlightMovementRange(Graphics g, Unit unit) {
         int cx = unit.getPosition().getX();
@@ -479,19 +490,13 @@ public class GamePanel extends JPanel {
             }
 
             JOptionPane.showMessageDialog(this, message);
+
             currentAction = "";
             selectedUnit = null;
             repaint();
-
-            // If you want to reset or exit the game
-            // int option = JOptionPane.showConfirmDialog(this, "Do you want to start a new game?", "Restart", JOptionPane.YES_NO_OPTION);
-            // if (option == JOptionPane.YES_OPTION) {
-            //     controller.resetGame();
-            // } else {
-            //     System.exit(0);
-            // }
         }
     }
+
 
 
 
