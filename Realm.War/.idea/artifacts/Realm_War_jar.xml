@@ -1,0 +1,11 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="Realm.War:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/Realm_War_jar</output-path>
+    <root id="archive" name="Realm.War.jar">
+      <element id="module-output" name="Realm.War" />
+      <element id="module-test-output" name="Realm.War" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/checkerframework/checker-qual/3.41.0/checker-qual-3.41.0.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/postgresql/postgresql/42.7.1/postgresql-42.7.1.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>

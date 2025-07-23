@@ -152,6 +152,18 @@ public class MenuPanel extends JPanel {
             }
         });
 
+        exitItem.addActionListener(e -> {
+            int confirm = JOptionPane.showConfirmDialog(
+                    null,
+                    "Are you sure you want to exit the game?",
+                    "Exit Confirmation",
+                    JOptionPane.YES_NO_OPTION
+            );
+
+            if (confirm == JOptionPane.YES_OPTION) {
+                System.exit(0);
+            }
+        });
 
 
 
