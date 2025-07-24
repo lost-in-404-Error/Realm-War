@@ -24,6 +24,7 @@ public class Kingdom implements Serializable {
 
 
 
+
     public Kingdom(int id, TownHall townHall) {
         this.id = id;
         this.townHall = townHall;
@@ -36,11 +37,11 @@ public class Kingdom implements Serializable {
         this.usedUnitSpace = 0;
         this.gold = 20;
         this.food = 20;
+
     }
 
-
-
     public void startTurn(GameState gameState) {
+        this.gameState = gameState;
         for (Structure structure : structures) {
             structure.performTurnAction(this, this.gameState);
         }
@@ -59,6 +60,7 @@ public class Kingdom implements Serializable {
             this.food -= unit.getRationCost();
         }
     }
+
 
     public void addStructure(Structure structure) {
         if (structure != null) {
@@ -82,10 +84,7 @@ public class Kingdom implements Serializable {
         usedUnitSpace += unit.getUnitSpace();
     }
 
-    public void absorbBlock(Block block) {
-        block.setAbsorbed(true, this.id);
-        absorbedBlocks.add(block);
-    }
+
 
     public int countStructuresOfType(Class<? extends Structure> type) {
         return (int) structures.stream().filter(type::isInstance).count();
@@ -95,6 +94,7 @@ public class Kingdom implements Serializable {
         this.gold += 5;
         this.food += 3;
     }
+
 
 
     public int getId() {
@@ -129,9 +129,7 @@ public class Kingdom implements Serializable {
         return usedUnitSpace;
     }
 
-    public TownHall getTownHall() {
-        return townHall;
-    }
+
 
     public List<Structure> getStructures() {
         return structures;
@@ -194,6 +192,17 @@ public class Kingdom implements Serializable {
             usedUnitSpace -= targetUnit.getUnitSpace();
         }
     }
+    public void moveUnit(Unit unit, Position newPosition) {
+        Block newBlock = gameState.getBlockAt(newPosition);
+        if (newBlock != null) {
+            Kingdom ownerKingdom = unit.getKingdom();
+            ownerKingdom.absorbBlock(newBlock);
+
+            unit.setPosition(newPosition);
+        }
+    }
+
+
 
 
     public String getOwnedBlocks() {
@@ -225,6 +234,71 @@ public class Kingdom implements Serializable {
 
         }
     }
+
+    public void absorbBlock(Block block) {
+
+        if (block == null) return;
+
+        int oldOwnerId = block.getOwnerID();
+        if (oldOwnerId == this.id) return;
+
+
+        if (oldOwnerId != -1) {
+            Kingdom oldOwner = gameState.getKingdomById(oldOwnerId);
+            if (oldOwner != null) {
+                oldOwner.getAbsorbedBlocks().remove(block);
+
+                Structure structure = block.getStructure();
+                if (structure != null) {
+                    structure.setDestroyed(true);
+                    oldOwner.removeStructure(structure);
+                    block.removeStructure();
+
+
+                    if (structure instanceof TownHall) {
+                        oldOwner.getTownHall().setDestroyed(true);
+                        System.out.println("🏳️ Player " + oldOwner.getId() + " has been defeated!");
+
+                        if (structure instanceof TownHall) {
+                            oldOwner.getTownHall().setDestroyed(true);
+                            System.out.println("🏳️ Player " + oldOwner.getId() + " has been defeated!");
+
+                            if (gameState != null) {
+                                gameState.evaluateGameState();
+                            }
+                        }
+
+                    }
+                }
+            }
+        }
+
+
+        block.setAbsorbed(true, this.id);
+        absorbedBlocks.add(block);
+    }
+
+    public boolean isDefeated() {
+        return townHall.isDestroyed();
+    }
+
+
+    public void setTownHall(Object o) {
+    }
+    public boolean hasTownHall() {
+        return structures.stream()
+                .anyMatch(s -> s instanceof TownHall && !s.isDestroyed());
+    }
+
+    public TownHall getTownHall() {
+        for (Structure s : structures) {
+            if (s instanceof TownHall) {
+                return (TownHall) s;
+            }
+        }
+        return null;
+    }
+
 
 
 }

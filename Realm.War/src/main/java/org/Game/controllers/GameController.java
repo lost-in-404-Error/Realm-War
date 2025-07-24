@@ -7,6 +7,8 @@ import org.Game.models.structures.*;
 import org.Game.models.units.*;
 import org.Game.views.GamePanel;
 
+import javax.swing.*;
+import java.awt.*;
 import java.util.ArrayList;
 
 public class GameController {
@@ -18,6 +20,11 @@ public class GameController {
 
     public GameController(GameState gameState) {
         this.gameState = gameState;
+        gameState.setGameController(this);
+        Unit.setGameState(this.gameState);
+
+        this.gamePanel = new GamePanel(gameState);
+        this.gamePanel.setController(this);
         this.structureController = new StructureController(gameState);
     }
 
@@ -49,10 +56,26 @@ public class GameController {
         }
         gameState = new GameState(15, 10, 2);
         gameState.startGame();
+
+        gameState.setGameController(this);
+        Unit.setGameState(gameState);
+        structureController.setGameState(gameState);
+        if (gamePanel != null) gamePanel.setGameState(gameState);
+        if (gamePanel != null) gamePanel.repaint();
     }
 
     public void nextTurn() {
-        gameState.endTurn();
+        if (isGameOver()) {
+            Kingdom winner = getWinner();
+            String message = (winner != null)
+                    ? "Game Over! Winner: Kingdom " + winner.getId()
+                    : "Game Over! No winner.";
+            JOptionPane.showMessageDialog(gamePanel, message);
+            return;
+        }
+
+        gameState.nextTurn();
+        if (gamePanel != null) gamePanel.repaint();
     }
 
     public boolean isGameOver() {
@@ -94,6 +117,7 @@ public class GameController {
         if (success) {
             currentKingdom.decreaseGold(structure.getBuildCostGold());
             block.setStructure(structure);
+            currentKingdom.addStructure(structure);
             if (gamePanel != null) gamePanel.repaint();
         }
 
@@ -107,13 +131,22 @@ public class GameController {
         if (block == null || block.getStructure() == null) return false;
 
         Structure structure = block.getStructure();
-
         block.removeStructure();
 
         Kingdom owner = gameState.getKingdomById(structure.getKingdomId());
         if (owner != null) {
             owner.removeStructure(structure);
         }
+
+        gameState.removeStructure(structure);
+
+        if (structure instanceof TownHall) {
+            gameState.removeKingdom(owner);
+        }
+
+        gameState.evaluateGameState();
+
+        if (gamePanel != null) gamePanel.repaint();
 
         return true;
     }
@@ -144,6 +177,8 @@ public class GameController {
         currentKingdom.decreaseGold(unit.getGoldCost());
         currentKingdom.decreaseFood(unit.getFoodCost());
 
+        if (gamePanel != null) gamePanel.repaint();
+
         return true;
     }
 
@@ -158,21 +193,26 @@ public class GameController {
         int dy = Math.abs(unit.getPosition().getY() - destination.getY());
         if (dx + dy > unit.getMovementRange()) return false;
 
-        Structure targetStructure = gameState.getStructureAt(destination);
-        if (targetStructure != null && targetStructure.getKingdomId() != unit.getKingdomId()) {
-            targetStructure.setDestroyed(true);
-            gameState.removeDestroyedStructures();
-            if (gamePanel != null) gamePanel.repaint();
+        // اگر به تاون‌هال دشمن حمله شد، آن را نابود کن
+        Structure structure = destBlock.getStructure();
+        if (structure instanceof TownHall && structure.getKingdomId() != unit.getKingdomId()) {
+            structure.setDurability(0);
+            structure.onDestroyed(gameState);
+            gameState.evaluateGameState();
+        }
+
+        Kingdom kingdom = gameState.getKingdomById(unit.getKingdomId());
+        if (kingdom != null) {
+            kingdom.moveUnit(unit, destination);
         }
 
         Block sourceBlock = gameState.getBlockAt(unit.getPosition());
         if (sourceBlock != null) sourceBlock.setUnit(null);
 
-        unit.setPosition(destination);
         destBlock.setUnit(unit);
+        unit.setPosition(destination);
 
-        Kingdom owner = gameState.getKingdomById(unit.getKingdomId());
-        if (owner != null) owner.absorbBlock(destBlock);
+        if (gamePanel != null) gamePanel.repaint();
 
         return true;
     }
@@ -201,9 +241,18 @@ public class GameController {
 
         if (target.getHitPoints() <= 0) {
             Kingdom enemy = gameState.getKingdomById(target.getKingdomId());
-            if (enemy != null) enemy.getUnits().remove(target);
-            if (targetBlock != null) targetBlock.setUnit(null);
+            if (enemy != null) {
+                enemy.getUnits().remove(target);
+                if (targetBlock != null) targetBlock.setUnit(null);
+
+                if (enemy.isDefeated()) {
+                    System.out.println("🏳 Player " + enemy.getId() + " defeated.");
+                }
+            }
+            gameState.evaluateGameState();
         }
+
+        if (gamePanel != null) gamePanel.repaint();
 
         return true;
     }
@@ -241,16 +290,37 @@ public class GameController {
 
             gameState.getGameMap()[mergedUnit.getPosition().getX()][mergedUnit.getPosition().getY()].setUnit(mergedUnit);
 
+            if (gamePanel != null) gamePanel.repaint();
+
             return true;
         }
+
         return false;
     }
 
     public ArrayList<Player> getWinners() {
+
         return null;
     }
 
     public void setGameState(GameState loadedState) {
         this.gameState = loadedState;
+        gameState.setGameController(this);
+        Unit.setGameState(loadedState);
+        structureController.setGameState(loadedState);
+        if (gamePanel != null) gamePanel.setGameState(loadedState);
+        if (gamePanel != null) gamePanel.repaint();
+    }
+
+    public Component getGamePanel() {
+        return gamePanel;
+    }
+
+    public void restartGame() {
+        resetGame();
+    }
+
+    public boolean isTownHallDestroyed(Kingdom kingdom) {
+        return kingdom.getTownHall() == null || kingdom.getTownHall().getDurability() <= 0;
     }
 }

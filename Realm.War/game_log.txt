@@ -3,3 +3,6 @@
 [2025-07-20 20:36:24] Tables 'games', 'winners', and 'kingdoms' created successfully.
 [2025-07-22 16:50:37] Tables 'games', 'winners', and 'kingdoms' created successfully.
 [2025-07-22 17:02:05] Tables 'games', 'winners', and 'kingdoms' created successfully.
+[2025-07-24 01:19:39] Tables 'games', 'winners', and 'kingdoms' created successfully.
+[2025-07-24 01:29:02] Tables 'games', 'winners', and 'kingdoms' created successfully.
+[2025-07-24 13:21:38] All tables created successfully.

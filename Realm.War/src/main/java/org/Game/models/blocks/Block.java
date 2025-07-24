@@ -101,4 +101,13 @@ public abstract class Block implements Serializable {
         this.kingdomId = kingdomId;
     }
 
+    public int getKingdomId() {
+        return kingdomId;
+    }
+
+    public void setKingdomId(int kingdomId) {
+        this.kingdomId = kingdomId;
+        this.absorbed = kingdomId != -1;
+    }
+
 }

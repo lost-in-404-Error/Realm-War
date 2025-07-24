@@ -1,5 +1,7 @@
 package org.Game.models.units;
 
+import org.Game.models.GameState;
+import org.Game.models.Kingdom;
 import org.Game.models.Position;
 
 import java.io.Serializable;
@@ -17,6 +19,7 @@ public abstract class Unit  implements Serializable {
     protected int defense;
     protected Position position;
     protected int kingdomId;
+    private static GameState gameState;
 
 
     public Unit(int hitPoints, int movementRange, int attackPower, int attackRange,
@@ -135,5 +138,14 @@ public abstract class Unit  implements Serializable {
         return oldUnit;
     }
     public abstract Unit mergeWith(Unit u2);
+
+    public Kingdom getKingdom() {
+        return gameState.getKingdomById(kingdomId);
+    }
+
+
+    public static void setGameState(GameState state) {
+        gameState = state;
+    }
 
 }

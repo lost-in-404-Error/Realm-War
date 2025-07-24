@@ -18,7 +18,7 @@ public abstract class Structure implements Serializable {
     private final Block baseBlock;
     private int kingdomId;
 
-    
+
     transient private Kingdom kingdom;
 
     public Structure(int maxLevel, int initialDurability, int maintenanceCost,
@@ -32,7 +32,7 @@ public abstract class Structure implements Serializable {
         this.kingdomId = kingdomId;
     }
 
-   
+
     public abstract int getBuildCostGold();
     public abstract int getBuildCostFood();
     public abstract int getUnitSpace();
@@ -40,7 +40,7 @@ public abstract class Structure implements Serializable {
     public abstract void upgrade();
     public abstract void performTurnAction(Kingdom kingdom, GameState gameState);
 
-   
+
     public int getLevel() {
         return level;
     }
@@ -95,22 +95,22 @@ public abstract class Structure implements Serializable {
         return "structure";
     }
 
-   
+
     public int getTotalBuildCost() {
         return getBuildCostGold() + getBuildCostFood() + getUnitSpace();
     }
 
-    
+
     public boolean isDestroyed() {
         return durability <= 0;
     }
 
-    
+
     public void takeDamage(int damage) {
         setDurability(this.durability - damage);
     }
 
-    
+
     public void onDestroyed(GameState gameState) {
         Block block = gameState.getBlockAt(getPosition());
         if (block != null) {
@@ -120,10 +120,18 @@ public abstract class Structure implements Serializable {
         Kingdom kingdom = gameState.getKingdomById(getKingdomId());
         if (kingdom != null) {
             kingdom.removeStructure(this);
+
+
+            if (this instanceof TownHall) {
+                kingdom.setTownHall(null);
+            }
         }
     }
 
 
+
     public void setDestroyed(boolean b) {
     }
+
+
 }

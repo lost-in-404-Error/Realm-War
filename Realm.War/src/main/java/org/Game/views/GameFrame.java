@@ -151,13 +151,16 @@ public class GameFrame extends JFrame {
                 actionPanel.setActionsEnabled(true);
                 updateInfoPanel();
                 gamePanel.repaint();
+
+
             } else {
                 JOptionPane.showMessageDialog(this, "Move failed. Invalid destination.");
             }
+
         }
     }
 
-    private void handleAttack(Unit clickedUnit, Position pos, Kingdom currentKingdom) {
+            private void handleAttack(Unit clickedUnit, Position pos, Kingdom currentKingdom) {
         if (gameController.getSelectedUnit() == null) {
             if (clickedUnit != null && clickedUnit.getKingdomId() == currentKingdom.getId()) {
                 gameController.setSelectedUnit(clickedUnit);
@@ -262,7 +265,6 @@ public class GameFrame extends JFrame {
         resourceTimer.start();
     }
 
-
     private void endTurn() {
         turnTimer.stop();
         resourceTimer.stop();
@@ -270,7 +272,25 @@ public class GameFrame extends JFrame {
         attackMode = false;
         mergeMode = false;
         gameController.setSelectedUnit(null);
+
         gameController.nextTurn();
+
+
+        if (gameController.getGameState().isGameOver()) {
+            Kingdom winner = gameController.getGameState().getWinner();
+            if (winner != null) {
+                JOptionPane.showMessageDialog(this,
+                        "🏆 Game Over! Winner: Player " + winner.getId(),
+                        "Game Over", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this,
+                        "Game Over! It's a draw.",
+                        "Game Over", JOptionPane.INFORMATION_MESSAGE);
+            }
+            stopGame();
+            return;
+        }
+
         updateUIForCurrentPlayer();
         turnSecondsLeft = TURN_TIME;
         turnTimer.start();
@@ -315,7 +335,7 @@ public class GameFrame extends JFrame {
 
 
     public static void main(String[] args) {
-        GameState gameState = new GameState(15, 10, 2);
+        GameState gameState = new GameState(5, 5, 2);
         GameController gameController = new GameController(gameState);
 
         GamePanel gamePanel = new GamePanel(gameState);

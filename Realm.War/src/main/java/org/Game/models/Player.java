@@ -3,13 +3,16 @@ package org.Game.models;
 import java.io.Serializable;
 
 public class Player implements Serializable {
-    private final String name;
+
+    private String name;
     private int score;
 
-    public Player(String name, int score) {
+    public Player( String name, int score) {
+
         this.name = name;
         this.score = score;
     }
+
 
     public String getName() {
         return name;

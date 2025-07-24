@@ -2,7 +2,6 @@ package org.Game;
 
 import org.Game.controllers.GameController;
 import org.Game.models.GameState;
-import org.Game.utils.DatabaseManager;
 import org.Game.views.GameFrame;
 import org.Game.views.GamePanel;
 

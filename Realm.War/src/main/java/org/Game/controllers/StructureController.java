@@ -112,4 +112,6 @@ public class StructureController {
     }
 
 
+    public void setGameState(GameState loadedState) {
+    }
 }

@@ -197,6 +197,7 @@ public class GamePanel extends JPanel {
                             selectedUnit = null;
                             currentAction = "";
                             repaint();
+                            checkGameOver();
                         } else {
                             JOptionPane.showMessageDialog(this, "Move failed. Try again.");
                         }
@@ -222,6 +223,7 @@ public class GamePanel extends JPanel {
                             JOptionPane.showMessageDialog(this, "Attack successful.");
                             selectedUnit = null;
                             currentAction = "";
+                            checkGameOver();
                         } else {
                             JOptionPane.showMessageDialog(this, "Attack failed. Try again.");
                         }
@@ -261,6 +263,7 @@ public class GamePanel extends JPanel {
                             selectedUnit = null;
                             currentAction = "";
                             repaint();
+                            checkGameOver();
                         } else {
                             JOptionPane.showMessageDialog(this, "Merge failed.");
                         }
@@ -277,6 +280,7 @@ public class GamePanel extends JPanel {
 
         repaint();
         checkGameOver();
+
 
     }
 
@@ -478,9 +482,14 @@ public class GamePanel extends JPanel {
         }
         this.repaint();
     }
+    private boolean shownGameOverMessage = false;
 
     private void checkGameOver() {
+        if (shownGameOverMessage) return;
+
         if (gameState.isGameOver()) {
+            shownGameOverMessage = true;
+
             Kingdom winner = gameState.getWinner();
             String message;
             if (winner != null) {
@@ -489,15 +498,26 @@ public class GamePanel extends JPanel {
                 message = "The game ended in a draw!";
             }
 
-            JOptionPane.showMessageDialog(this, message);
+            int option = JOptionPane.showOptionDialog(
+                    this,
+                    message + "\nWould you like to restart the game?",
+                    "Game Over",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.INFORMATION_MESSAGE,
+                    null,
+                    new String[]{"Restart", "Quit"},
+                    "Restart"
+            );
+
+            if (option == JOptionPane.YES_OPTION) {
+                controller.restartGame();
+            } else {
+                System.exit(0);
+            }
 
             currentAction = "";
             selectedUnit = null;
             repaint();
         }
     }
-
-
-
-
-}
+    }

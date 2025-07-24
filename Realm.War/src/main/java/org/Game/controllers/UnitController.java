@@ -32,7 +32,7 @@ public class UnitController {
         if (unit1 == null || unit2 == null || !unit1.canMergeWith(unit2)) return false;
 
         Unit merged = unit1.merge(unit2);
-      
+
         gameState.getCurrentKingdom().getUnits().remove(unit1);
         gameState.getCurrentKingdom().getUnits().remove(unit2);
         gameState.getCurrentKingdom().getUnits().add(merged);
@@ -55,7 +55,6 @@ public class UnitController {
 
         Block destBlock = gameMap[x][y];
 
-
         if (destBlock == null || destBlock instanceof org.Game.models.blocks.VoidBlock) return false;
         if (destBlock.getUnit() != null) return false;
 
@@ -64,6 +63,8 @@ public class UnitController {
             gameMap[prev.getX()][prev.getY()].setUnit(null);
         }
 
+
+        unit.getKingdom().absorbBlock(destBlock);
 
         unit.moveTo(destination);
         destBlock.setUnit(unit);
@@ -103,6 +104,7 @@ public class UnitController {
             removeUnit(target);
         }
     }
+
 
     public List<Unit> getUnits() {
         return Collections.unmodifiableList(units);
