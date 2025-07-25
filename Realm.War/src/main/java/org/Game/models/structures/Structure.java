@@ -45,7 +45,7 @@ public abstract class Structure implements Serializable {
         return level;
     }
 
-    protected void setLevel(int level) {
+    public void setLevel(int level) {
         if (level > 0 && level <= maxLevel) {
             this.level = level;
         }

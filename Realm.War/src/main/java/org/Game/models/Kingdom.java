@@ -15,13 +15,11 @@ public class Kingdom implements Serializable {
     private int food;
     private int totalUnitSpace;
     private int usedUnitSpace;
-    private final TownHall townHall;
-    private final List<Structure> structures;
-    private final List<Unit> units;
-    private final List<Block> absorbedBlocks;
+    private  TownHall townHall;
+    private List<Structure> structures;
+    private List<Unit> units;
+    private  List<Block> absorbedBlocks;
     private GameState gameState;
-    private List<Integer> structureIds;
-
 
 
 
@@ -31,14 +29,20 @@ public class Kingdom implements Serializable {
         this.structures = new ArrayList<>();
         this.units = new ArrayList<>();
         this.absorbedBlocks = new ArrayList<>();
-        this.townHall.setKingdomId(id);
-        this.structures.add(townHall);
-        this.totalUnitSpace = townHall.getUnitSpace();
-        this.usedUnitSpace = 0;
-        this.gold = 20;
-        this.food = 20;
 
+        if (this.townHall != null) {
+            this.townHall.setKingdomId(id);
+            this.structures.add(this.townHall);
+            this.totalUnitSpace = this.townHall.getUnitSpace();
+        } else {
+            this.totalUnitSpace = 0;
+        }
+
+        this.usedUnitSpace = 0;
+        this.gold =100;
+        this.food = 50;
     }
+
 
     public void startTurn(GameState gameState) {
         this.gameState = gameState;
@@ -129,7 +133,16 @@ public class Kingdom implements Serializable {
         return usedUnitSpace;
     }
 
-
+    public void setTownHall(TownHall townHall) {
+        this.townHall = townHall;
+        if (townHall != null) {
+            townHall.setKingdomId(this.id);
+            if (!structures.contains(townHall)) {
+                structures.add(townHall);
+            }
+            this.totalUnitSpace += townHall.getUnitSpace();
+        }
+    }
 
     public List<Structure> getStructures() {
         return structures;
@@ -256,22 +269,21 @@ public class Kingdom implements Serializable {
 
 
                     if (structure instanceof TownHall) {
-                        oldOwner.getTownHall().setDestroyed(true);
-                        System.out.println("🏳️ Player " + oldOwner.getId() + " has been defeated!");
-
-                        if (structure instanceof TownHall) {
-                            oldOwner.getTownHall().setDestroyed(true);
+                        TownHall townHall = oldOwner.getTownHall();
+                        if (townHall != null) {
+                            townHall.setDestroyed(true);
+                            oldOwner.setTownHall(null);
                             System.out.println("🏳️ Player " + oldOwner.getId() + " has been defeated!");
+                        }
+                    }
 
-                            if (gameState != null) {
+                    if (gameState != null) {
                                 gameState.evaluateGameState();
                             }
                         }
 
                     }
                 }
-            }
-        }
 
 
         block.setAbsorbed(true, this.id);
@@ -279,12 +291,18 @@ public class Kingdom implements Serializable {
     }
 
     public boolean isDefeated() {
-        return townHall.isDestroyed();
+        return townHall == null || townHall.isDestroyed();
     }
-
 
     public void setTownHall(Object o) {
+        if (o == null) {
+            this.townHall = null;
+        } else if (o instanceof TownHall) {
+            this.setTownHall((TownHall) o);
+        }
     }
+
+
     public boolean hasTownHall() {
         return structures.stream()
                 .anyMatch(s -> s instanceof TownHall && !s.isDestroyed());
@@ -298,7 +316,27 @@ public class Kingdom implements Serializable {
         }
         return null;
     }
+    private Player player;
+
+    public Player getPlayer() {
+        return this.player;
+    }
+
+    public void setPlayer(Player player) {
+        this.player = player;
+    }
 
 
+    public Kingdom(int kingdomId) {
+        this.id = kingdomId;
 
+    }
+
+
+    public void setStructures(List<Structure> structures) {
+    }
+
+    public boolean createUnit(Unit unit) {
+        return units.add(unit);
+    }
 }

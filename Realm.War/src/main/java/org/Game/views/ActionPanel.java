@@ -29,9 +29,9 @@ public class ActionPanel extends JPanel {
         recruitButton = createButtonWithIcon("Recruit", "/img/recruit.png");
         moveButton = createButtonWithIcon("Move", "/img/move.png");
         attackButton = createButtonWithIcon("Attack", "/img/attack.png");
+        mergeButton = createButtonWithIcon("Merge", "/img/merge.png");
 
 
-        mergeButton = new JButton("Merge");
         mergeButton.setPreferredSize(new Dimension(130, 50));
         mergeButton.setFocusPainted(false);
         mergeButton.setToolTipText("Merge");

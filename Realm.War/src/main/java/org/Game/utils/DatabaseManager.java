@@ -3,18 +3,17 @@ package org.Game.utils;
 import org.Game.models.Kingdom;
 import org.Game.models.Player;
 
-
 import java.sql.*;
-import java.util.ArrayList;
 import java.util.List;
 
 public class DatabaseManager {
+
     private static final String URL = "jdbc:postgresql://localhost:5432/realm_war_game";
     private static final String USER = "postgres";
     private static final String PASS = "2005";
 
     public void createTables() {
-        String createGamesTable = "CREATE TABLE IF NOT EXISTS public.games(" +
+        String createGamesTable = "CREATE TABLE IF NOT EXISTS games (" +
                 "id SERIAL PRIMARY KEY, " +
                 "played_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
                 ");";
@@ -22,7 +21,9 @@ public class DatabaseManager {
         String createWinnersTable = "CREATE TABLE IF NOT EXISTS winners (" +
                 "id SERIAL PRIMARY KEY, " +
                 "game_id INTEGER REFERENCES games(id) ON DELETE CASCADE, " +
-                "name TEXT NOT NULL, " +
+                "player_name TEXT NOT NULL, " +
+                "kingdom_id INTEGER NOT NULL, " +
+                "score INTEGER NOT NULL, " +
                 "food INTEGER NOT NULL, " +
                 "gold INTEGER NOT NULL" +
                 ");";
@@ -31,10 +32,23 @@ public class DatabaseManager {
                 "id SERIAL PRIMARY KEY, " +
                 "game_id INTEGER REFERENCES games(id) ON DELETE CASCADE, " +
                 "kingdom_id INTEGER NOT NULL, " +
-                "gold INTEGER NOT NULL, " +
+                "player_name TEXT NOT NULL, " +
                 "food INTEGER NOT NULL, " +
+                "gold INTEGER NOT NULL, " +
                 "owned_blocks TEXT" +
                 ");";
+
+        String createPlayersResultTable = "CREATE TABLE IF NOT EXISTS players_result (" +
+                "id SERIAL PRIMARY KEY, " +
+                "game_id INTEGER REFERENCES games(id) ON DELETE CASCADE, " +
+                "player_name TEXT NOT NULL, " +
+                "kingdom_id INTEGER NOT NULL, " +
+                "score INTEGER NOT NULL, " +
+                "food INTEGER NOT NULL, " +
+                "gold INTEGER NOT NULL, " +
+                "is_winner BOOLEAN NOT NULL" +
+                ");";
+
 
         try (Connection conn = DriverManager.getConnection(URL, USER, PASS);
              Statement stmt = conn.createStatement()) {
@@ -42,81 +56,104 @@ public class DatabaseManager {
             stmt.execute(createGamesTable);
             stmt.execute(createWinnersTable);
             stmt.execute(createKingdomsTable);
-            GameLogger.log("Tables 'games', 'winners', and 'kingdoms' created successfully.");
+            stmt.execute(createPlayersResultTable);
+            GameLogger.log("✅ Tables created successfully.");
 
         } catch (SQLException e) {
-            GameLogger.logError("Failed to create tables", e);
+            GameLogger.logError("❌ Failed to create tables.", e);
         }
     }
 
-    public int saveGameData(ArrayList<Player> winners, List<Kingdom> kingdoms) {
+    public int saveGameData(List<Kingdom> winners, List<Kingdom> kingdoms) {
         String insertGameSQL = "INSERT INTO games DEFAULT VALUES RETURNING id;";
-        String insertWinnerSQL = "INSERT INTO winners(game_id, name, food, gold) VALUES (?, ?, ?, ?);";
-        String insertKingdomSQL = "INSERT INTO kingdoms(game_id, kingdom_id, gold, food, owned_blocks) VALUES (?, ?, ?, ?, ?);";
+        String insertWinnerSQL = "INSERT INTO winners(game_id, player_name, kingdom_id, score, food, gold) VALUES (?, ?, ?, ?, ?, ?);";
+        String insertKingdomSQL = "INSERT INTO kingdoms(game_id, kingdom_id, player_name, food, gold, owned_blocks) VALUES (?, ?, ?, ?, ?, ?);";
+        String insertResultSQL = "INSERT INTO players_result(game_id, player_name, kingdom_id, score, food, gold, is_winner) VALUES (?, ?, ?, ?, ?, ?, ?);";
 
         try (Connection conn = DriverManager.getConnection(URL, USER, PASS);
-             PreparedStatement insertGameStmt = conn.prepareStatement(insertGameSQL);
-             PreparedStatement insertWinnerStmt = conn.prepareStatement(insertWinnerSQL);
-             PreparedStatement insertKingdomStmt = conn.prepareStatement(insertKingdomSQL)) {
+             PreparedStatement gameStmt = conn.prepareStatement(insertGameSQL);
+             PreparedStatement winnerStmt = conn.prepareStatement(insertWinnerSQL);
+             PreparedStatement kingdomStmt = conn.prepareStatement(insertKingdomSQL);
+             PreparedStatement resultStmt = conn.prepareStatement(insertResultSQL)) {
 
             conn.setAutoCommit(false);
 
-            ResultSet rs = insertGameStmt.executeQuery();
+            ResultSet rs = gameStmt.executeQuery();
             int gameId = -1;
             if (rs.next()) {
                 gameId = rs.getInt(1);
             } else {
                 conn.rollback();
-                throw new SQLException("Failed to insert new game.");
+                GameLogger.log("❌ Failed to insert game (no ID returned).");
+                return -1;
             }
 
-            for (int i = 0; i < winners.size(); i++) {
-                Player p = winners.get(i);
-                Kingdom k = kingdoms.get(i);
-
-                insertWinnerStmt.setInt(1, gameId);
-                insertWinnerStmt.setString(2, p.getName());
-                insertWinnerStmt.setInt(3, k.getFood());
-                insertWinnerStmt.setInt(4, k.getGold());
-                insertWinnerStmt.executeUpdate();
+            for (Kingdom winner : winners) {
+                Player player = winner.getPlayer();
+                if (player != null) {
+                    winnerStmt.setInt(1, gameId);
+                    winnerStmt.setString(2, player.getName());
+                    winnerStmt.setInt(3, winner.getId());
+                    winnerStmt.setInt(4, player.getScore());
+                    winnerStmt.setInt(5, winner.getFood());
+                    winnerStmt.setInt(6, winner.getGold());
+                    winnerStmt.executeUpdate();
+                    GameLogger.log("✅ Winner saved: " + player.getName());
+                }
             }
 
             for (Kingdom k : kingdoms) {
-                insertKingdomStmt.setInt(1, gameId);
-                insertKingdomStmt.setInt(2, k.getId());
-                insertKingdomStmt.setInt(3, k.getGold());
-                insertKingdomStmt.setInt(4, k.getFood());
-                insertKingdomStmt.setString(5, k.getOwnedBlocks());
-                insertKingdomStmt.executeUpdate();
+                Player player = k.getPlayer();
+                if (player != null) {
+
+                    kingdomStmt.setInt(1, gameId);
+                    kingdomStmt.setInt(2, k.getId());
+                    kingdomStmt.setString(3, player.getName());
+                    kingdomStmt.setInt(4, k.getFood());
+                    kingdomStmt.setInt(5, k.getGold());
+                    kingdomStmt.setString(6, k.getOwnedBlocks());
+                    kingdomStmt.executeUpdate();
+                    GameLogger.log("✅ Kingdom saved: " + player.getName());
+
+
+                    resultStmt.setInt(1, gameId);
+                    resultStmt.setString(2, player.getName());
+                    resultStmt.setInt(3, k.getId());
+                    resultStmt.setInt(4, player.getScore());
+                    resultStmt.setInt(5, k.getFood());
+                    resultStmt.setInt(6, k.getGold());
+                    resultStmt.setBoolean(7, winners.contains(k));
+                    resultStmt.executeUpdate();
+                }
             }
 
             conn.commit();
-            GameLogger.log("Game saved successfully with " + winners.size() + " winners and " + kingdoms.size() + " kingdoms.");
+            GameLogger.log("✅ Game data + results saved to database.");
             return gameId;
 
         } catch (SQLException e) {
-            GameLogger.logError("Failed to save game data", e);
+            GameLogger.logError("❌ Failed to save game data", e);
             return -1;
         }
     }
 
+
     public void dropTables() {
-        String sqlKingdoms = "DROP TABLE IF EXISTS kingdoms CASCADE;";
-        String sqlWinners = "DROP TABLE IF EXISTS winners CASCADE;";
-        String sqlGames = "DROP TABLE IF EXISTS games CASCADE;";
+        String dropKingdoms = "DROP TABLE IF EXISTS kingdoms CASCADE;";
+        String dropWinners = "DROP TABLE IF EXISTS winners CASCADE;";
+        String dropGames = "DROP TABLE IF EXISTS games CASCADE;";
 
         try (Connection conn = DriverManager.getConnection(URL, USER, PASS);
              Statement stmt = conn.createStatement()) {
 
-            stmt.executeUpdate(sqlKingdoms);
-            stmt.executeUpdate(sqlWinners);
-            stmt.executeUpdate(sqlGames);
-            GameLogger.log("Tables 'games', 'winners', and 'kingdoms' dropped successfully.");
+            stmt.executeUpdate(dropKingdoms);
+            stmt.executeUpdate(dropWinners);
+            stmt.executeUpdate(dropGames);
+
+            GameLogger.log("🧹 All tables dropped.");
 
         } catch (SQLException e) {
-            GameLogger.logError("Error dropping tables", e);
+            GameLogger.logError("❌ Failed to drop tables", e);
         }
     }
-
-
 }

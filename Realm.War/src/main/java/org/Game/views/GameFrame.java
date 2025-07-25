@@ -335,7 +335,7 @@ public class GameFrame extends JFrame {
 
 
     public static void main(String[] args) {
-        GameState gameState = new GameState(5, 5, 2);
+        GameState gameState = new GameState(15, 10, 2);
         GameController gameController = new GameController(gameState);
 
         GamePanel gamePanel = new GamePanel(gameState);

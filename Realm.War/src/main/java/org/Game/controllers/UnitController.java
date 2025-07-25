@@ -1,6 +1,7 @@
 package org.Game.controllers;
 
 import org.Game.models.GameState;
+import org.Game.models.Kingdom;
 import org.Game.models.Position;
 import org.Game.models.blocks.Block;
 import org.Game.models.units.Unit;
@@ -10,18 +11,52 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 public class UnitController {
-    private final List<Unit> units;
-    private GameState gameState;
+    private List<Unit> units;
+    private final GameState gameState;
 
-    public UnitController(List<Unit> units) {
-        this.units = (units != null) ? new ArrayList<>(units) : new ArrayList<>();
+
+    public UnitController(GameState gameState) {
+        this.units = new ArrayList<>();
+        this.gameState = gameState;
+
     }
 
-    public void addUnit(Unit unit) {
-        if (unit != null) {
-            units.add(unit);
+
+
+    public boolean addUnit(Unit unit) {
+        Position pos = unit.getPosition();
+        Block block = gameState.getBlockAt(pos);
+        Kingdom kingdom = gameState.getKingdom(unit.getKingdomId());
+
+
+        if (block == null || block.getUnit() != null) {
+            return false;
         }
+
+
+        if (!kingdom.getAbsorbedBlocks().contains(block)) {
+            return false;
+        }
+
+
+        int goldCost = unit.getGoldCost();
+        int foodCost = unit.getFoodCost();
+
+        if (kingdom.getGold() < goldCost || kingdom.getFood() < foodCost) {
+            return false;
+        }
+
+
+        kingdom.decreaseGold(goldCost);
+        kingdom.decreaseFood(foodCost);
+
+
+        block.setUnit(unit);
+        kingdom.getUnitController().addUnit(unit);
+
+        return true;
     }
+
 
 
     public void removeUnit(Unit unit) {

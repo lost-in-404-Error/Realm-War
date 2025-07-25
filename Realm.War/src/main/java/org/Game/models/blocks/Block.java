@@ -109,5 +109,17 @@ public abstract class Block implements Serializable {
         this.kingdomId = kingdomId;
         this.absorbed = kingdomId != -1;
     }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Block block = (Block) o;
+        return position.equals(block.getPosition());
+    }
+
+    @Override
+    public int hashCode() {
+        return position.hashCode();
+    }
 
 }

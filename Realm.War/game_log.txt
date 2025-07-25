@@ -6,3 +6,19 @@
 [2025-07-24 01:19:39] Tables 'games', 'winners', and 'kingdoms' created successfully.
 [2025-07-24 01:29:02] Tables 'games', 'winners', and 'kingdoms' created successfully.
 [2025-07-24 13:21:38] All tables created successfully.
+[2025-07-25 01:31:11] ✅ Tables created successfully.
+[2025-07-25 01:31:28] ✅ Tables created successfully.
+[2025-07-25 01:34:08] ✅ Winner saved: Player 2
+[2025-07-25 01:34:08] ✅ Kingdom saved: Player 2
+[2025-07-25 01:34:08] ✅ Game data saved to database.
+[2025-07-25 02:12:26] ✅ Tables created successfully.
+[2025-07-25 02:13:09] ✅ Winner saved: Player 2
+[2025-07-25 02:13:09] ✅ Kingdom saved: Player 2
+[2025-07-25 02:13:09] ✅ Game data saved to database.
+[2025-07-25 02:18:54] ✅ Tables created successfully.
+[2025-07-25 02:21:45] ERROR: ❌ Failed to save game data - ERROR: relation "winners" does not exist
+  Position: 13
+[2025-07-25 02:23:57] ✅ Tables created successfully.
+[2025-07-25 02:24:29] ✅ Winner saved: Player 2
+[2025-07-25 02:24:29] ✅ Kingdom saved: Player 2
+[2025-07-25 02:24:29] ✅ Game data + results saved to database.

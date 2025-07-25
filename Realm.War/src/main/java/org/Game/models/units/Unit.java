@@ -19,7 +19,7 @@ public abstract class Unit  implements Serializable {
     protected int defense;
     protected Position position;
     protected int kingdomId;
-    private static GameState gameState;
+    public static GameState gameState;
 
 
     public Unit(int hitPoints, int movementRange, int attackPower, int attackRange,

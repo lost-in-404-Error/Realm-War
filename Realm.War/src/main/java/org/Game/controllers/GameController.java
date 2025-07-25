@@ -10,13 +10,14 @@ import org.Game.views.GamePanel;
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
-
 public class GameController {
     private GameState gameState;
     private final StructureController structureController;
     private Unit selectedUnit;
     private volatile boolean paused = false;
     private GamePanel gamePanel;
+    private transient GameController gameController;
+
 
     public GameController(GameState gameState) {
         this.gameState = gameState;
@@ -76,6 +77,7 @@ public class GameController {
 
         gameState.nextTurn();
         if (gamePanel != null) gamePanel.repaint();
+
     }
 
     public boolean isGameOver() {
@@ -152,6 +154,7 @@ public class GameController {
     }
 
     public boolean tryRecruitUnit(String unitType, Position position) {
+
         Block[][] map = gameState.getGameMap();
         Kingdom currentKingdom = gameState.getCurrentKingdom();
 
@@ -179,9 +182,11 @@ public class GameController {
 
         if (gamePanel != null) gamePanel.repaint();
 
-        return true;
-    }
 
+        return true;
+
+
+    }
     public boolean tryMoveUnit(Unit unit, Position destination) {
         if (unit == null || destination == null) return false;
         if (!isPositionValid(destination, gameState.getGameMap())) return false;
@@ -193,7 +198,7 @@ public class GameController {
         int dy = Math.abs(unit.getPosition().getY() - destination.getY());
         if (dx + dy > unit.getMovementRange()) return false;
 
-        // اگر به تاون‌هال دشمن حمله شد، آن را نابود کن
+
         Structure structure = destBlock.getStructure();
         if (structure instanceof TownHall && structure.getKingdomId() != unit.getKingdomId()) {
             structure.setDurability(0);
@@ -323,4 +328,10 @@ public class GameController {
     public boolean isTownHallDestroyed(Kingdom kingdom) {
         return kingdom.getTownHall() == null || kingdom.getTownHall().getDurability() <= 0;
     }
+    public void endTurn() {
+        gameState.nextTurn();
+
+
+    }
+
 }

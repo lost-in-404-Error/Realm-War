@@ -5,7 +5,6 @@ package org.Game.views;
 import org.Game.controllers.GameController;
 import org.Game.models.GameState;
 import org.Game.models.Kingdom;
-import org.Game.models.Player;
 import org.Game.utils.DatabaseManager;
 
 import javax.swing.*;
@@ -120,8 +119,31 @@ public class MenuPanel extends JPanel {
 
             if (userSelection == JFileChooser.APPROVE_OPTION) {
                 String filePath = fileChooser.getSelectedFile().getAbsolutePath();
+
                 gameController.getGameState().saveGameState(filePath);
                 JOptionPane.showMessageDialog(null, "✅ Game saved to file: " + filePath);
+
+                GameState currentState = gameController.getGameState();
+                List<Kingdom> winners = new ArrayList<>();
+
+                if (currentState.getWinner() != null) {
+                    winners.add(currentState.getWinner());
+                }
+
+                List<Kingdom> kingdoms = currentState.getKingdoms();
+
+                DatabaseManager dbManager = new DatabaseManager();
+                try {
+                    int gameId = dbManager.saveGameData(winners, kingdoms);
+                    if (gameId != -1) {
+                        JOptionPane.showMessageDialog(null, "✅ Game also saved to database.");
+                    } else {
+                        JOptionPane.showMessageDialog(null, "⚠️ Failed to save game to database.");
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "❌ Error saving game to database: " + ex.getMessage());
+                }
             }
         });
 
@@ -151,7 +173,6 @@ public class MenuPanel extends JPanel {
                 }
             }
         });
-
         exitItem.addActionListener(e -> {
             int confirm = JOptionPane.showConfirmDialog(
                     null,

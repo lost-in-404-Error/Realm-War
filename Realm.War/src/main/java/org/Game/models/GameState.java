@@ -1,10 +1,12 @@
 package org.Game.models;
 
 import org.Game.controllers.GameController;
+import org.Game.controllers.UnitController;
 import org.Game.models.blocks.*;
 import org.Game.models.structures.Structure;
 import org.Game.models.structures.TownHall;
 import org.Game.models.units.Unit;
+import org.Game.views.InfoPanel;
 
 
 import javax.swing.*;
@@ -13,23 +15,31 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
 
+import static org.Game.models.units.Unit.gameState;
+
 public class GameState implements Serializable {
     private int currentPlayerTurn;
-    private List<Kingdom> kingdoms;
     private Block[][] gameMap;
     private int turnNumber;
     private boolean running;
     private List<Structure> structures;
+    private transient GameController gameController;
+    private transient JPanel gamePanel;
+    private List<Kingdom> kingdoms = new ArrayList<>();
+    private static final long serialVersionUID = 1L;
+
+
 
     private transient ScheduledExecutorService scheduler;
     private transient ScheduledFuture<?> resourceTask;
     private transient ScheduledFuture<?> turnTask;
-    private JPanel gamePanel;
+
     private static final int RESOURCE_INTERVAL = 3;  // seconds
     private static final int TURN_DURATION = 30;     // seconds
     private volatile boolean paused = false;
     private boolean gameOver;
     private Kingdom winner;
+    private UnitController unitController;
 
     public GameState(int mapWidth, int mapHeight, int playerCount) {
         this.kingdoms = new ArrayList<>();
@@ -37,6 +47,7 @@ public class GameState implements Serializable {
         this.currentPlayerTurn = 0;
         this.turnNumber = 1;
         this.running = false;
+        this.unitController = new UnitController(this);
 
 
 
@@ -44,6 +55,11 @@ public class GameState implements Serializable {
         initializeMap(mapWidth, mapHeight);
         initializeKingdoms(playerCount);
     }
+
+    public GameState() {
+
+    }
+
 
     private void initializeMap(int width, int height) {
         for (int x = 0; x < width; x++) {
@@ -79,11 +95,15 @@ public class GameState implements Serializable {
             Kingdom kingdom = new Kingdom(i + 1, townHall);
             kingdom.setGameState(this);
 
+
+            Player player = new Player("Player " + (i + 1), 0);
+            kingdom.setPlayer(player);
+
             kingdoms.add(kingdom);
 
             absorbSurroundingBlocks(kingdom, townHallPos);
-
         }
+
         evaluateGameState();
     }
 
@@ -103,6 +123,12 @@ public class GameState implements Serializable {
             }
         }
     }
+
+    public UnitController getUnitController() {
+        return unitController;
+    }
+
+
 
 
     public void pauseGame() {
@@ -126,6 +152,7 @@ public class GameState implements Serializable {
 
 
     public void startGame() {
+
         if (running) return;
 
         running = true;
@@ -144,10 +171,17 @@ public class GameState implements Serializable {
             endTurn();
         }, TURN_DURATION, TURN_DURATION, TimeUnit.SECONDS);
     }
+    private int currentTurn = 1;
+
+    public int getCurrentTurn() {
+        return currentTurn;
+    }
 
     public void nextTurn() {
-        if (!running || gameOver) return;
+
         evaluateGameState();
+        if (!running || gameOver) return;
+
         checkAndRemoveDestroyedStructures();
 
         if (gameOver) return;
@@ -168,6 +202,15 @@ public class GameState implements Serializable {
         } else {
             nextTurn();
         }
+
+        for (Kingdom k : gameState.getKingdoms()) {
+            Player player = k.getPlayer();
+            if (player != null) {
+                player.calculateScore(k);
+            }
+        }
+
+        turnNumber++;
     }
 
 
@@ -180,8 +223,10 @@ public class GameState implements Serializable {
     }
 
     public void endTurn() {
-        nextTurn();
+        gameState.nextTurn();
+
     }
+
 
     public int getCurrentPlayerTurn() {
         return currentPlayerTurn;
@@ -195,9 +240,7 @@ public class GameState implements Serializable {
         return gameMap;
     }
 
-    public int getTurnNumber() {
-        return turnNumber;
-    }
+
 
     public Kingdom getCurrentKingdom() {
         if (kingdoms.isEmpty()) {
@@ -219,13 +262,35 @@ public class GameState implements Serializable {
     }
 
     public boolean canPlaceUnit(Unit unit) {
+        if (unit == null) return false;
 
-        return true;
+        Position pos = unit.getPosition();
+        Block block = getBlockAt(pos);
+        Kingdom owner = getKingdomById(unit.getKingdomId());
+
+        if (block == null || owner == null) return false;
+
+        boolean isEmpty = block instanceof EmptyBlock && block.getUnit() == null;
+        boolean isOwned = owner.getOwnedBlocks().contains(pos.toString());
+
+        return isEmpty && isOwned;
     }
 
     public void placeUnit(Unit unit) {
+        if (!canPlaceUnit(unit)) return;
 
+        Block block = getBlockAt(unit.getPosition());
+        if (block != null && block.getUnit() == null) {
+            block.setUnit(unit);
+            Kingdom owner = getKingdomById(unit.getKingdomId());
+            if (owner != null) {
+                owner.getUnits().add(unit);
+            }
+            System.out.println("✅ Unit placed at " + unit.getPosition());
+        }
     }
+
+
 
     public void decreaseResources(Unit unit) {
         if (unit == null) return;
@@ -331,16 +396,7 @@ public class GameState implements Serializable {
     }
 
 
-    public ArrayList<Kingdom> getAliveKingdoms() {
-        ArrayList<Kingdom> alive = new ArrayList<>();
-        for (Kingdom kingdom : kingdoms) {
-            Structure townHall = kingdom.getTownHall();
-            if (townHall != null && townHall.getDurability() > 0) {
-                alive.add(kingdom);
-            }
-        }
-        return alive;
-    }
+
 
     public void saveGameState(String filePath) {
         try (FileOutputStream fileOut = new FileOutputStream(filePath);
@@ -351,7 +407,6 @@ public class GameState implements Serializable {
             e.printStackTrace();
         }
     }
-
 
     public static GameState loadGameState(String filePath) {
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filePath))) {
@@ -369,8 +424,6 @@ public class GameState implements Serializable {
             return null;
         }
     }
-
-
 
 
 
@@ -526,7 +579,7 @@ public class GameState implements Serializable {
         if (kingdoms.size() == 1) {
             running = false;
             Kingdom winner = kingdoms.get(0);
-           // System.out.println("🏆 Game Over! Kingdom #" + winner.getId() + " wins!");
+            System.out.println("🏆 Game Over! Kingdom #" + winner.getId() + " wins!");
         } else if (kingdoms.size() == 0) {
             running = false;
             System.out.println("🏴 Game Over! No winners remain.");
@@ -542,7 +595,7 @@ public class GameState implements Serializable {
         return null;
     }
 
-    private GameController gameController;
+
 
     public void setGameController(GameController gameController) {
         this.gameController = gameController;
@@ -552,19 +605,19 @@ public class GameState implements Serializable {
         return gameController;
     }
     private void announceWinner(Kingdom winner) {
-      //  System.out.println("🏁 Game Over!");
-       // System.out.println("🏆 Kingdom #" + winner.getId() + " wins!");
+        System.out.println("🏁 Game Over!");
+        System.out.println("🏆 Kingdom #" + winner.getId() + " wins!");
 
         if (gameController != null && gameController.getGamePanel() != null) {
-           // JOptionPane.showMessageDialog(gameController.getGamePanel(),
-                 //   "🏆 Player with ID " + winner.getId() + " wins the game!");
+          //  JOptionPane.showMessageDialog(gameController.getGamePanel(),
+            //        "🏆 Player with ID " + winner.getId() + " wins the game!");
         }
     }
     private void announceNoWinner() {
-      //  System.out.println("🟨 Game Over! No winners.");
+        System.out.println("🟨 Game Over! No winners.");
         if (gameController != null && gameController.getGamePanel() != null) {
-           // JOptionPane.showMessageDialog(gameController.getGamePanel(),
-              //      "🟨 Game Over! No players left standing.");
+          //  JOptionPane.showMessageDialog(gameController.getGamePanel(),
+            //        "🟨 Game Over! No players left standing.");
         }
     }
 
@@ -642,4 +695,14 @@ public class GameState implements Serializable {
     }
 
 
+    public void setGamePanel(JPanel gamePanel) {
+        this.gamePanel = gamePanel;
+    }
+
+    public void setKingdoms(List<Kingdom> kingdoms) {
+    }
+
+    public int getTurnNumber() {
+        return turnNumber;
+    }
 }

@@ -20,6 +20,8 @@ public class TownHall extends Structure implements Serializable {
         super(MAX_LEVEL, INITIAL_DURABILITY, MAINTENANCE_COST, position, baseBlock, kingdomId);
     }
 
+
+
     @Override
     public boolean canUpgrade() {
         return false;
@@ -62,4 +64,7 @@ public class TownHall extends Structure implements Serializable {
     }
 
 
+    public String getBaseBlockData() {
+        return null;
+    }
 }
