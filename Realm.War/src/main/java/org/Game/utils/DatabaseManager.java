@@ -1,9 +1,11 @@
 package org.Game.utils;
 
+import org.Game.models.GameState;
 import org.Game.models.Kingdom;
 import org.Game.models.Player;
 
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class DatabaseManager {
@@ -87,43 +89,49 @@ public class DatabaseManager {
                 GameLogger.log("❌ Failed to insert game (no ID returned).");
                 return -1;
             }
+            int playerIndex = 1;
 
             for (Kingdom winner : winners) {
                 Player player = winner.getPlayer();
                 if (player != null) {
+                    String manualPlayerName = "Player " + playerIndex;  // Player 1، Player 2
                     winnerStmt.setInt(1, gameId);
-                    winnerStmt.setString(2, player.getName());
+                    winnerStmt.setString(2, manualPlayerName);
                     winnerStmt.setInt(3, winner.getId());
                     winnerStmt.setInt(4, player.getScore());
                     winnerStmt.setInt(5, winner.getFood());
                     winnerStmt.setInt(6, winner.getGold());
                     winnerStmt.executeUpdate();
-                    GameLogger.log("✅ Winner saved: " + player.getName());
+                    GameLogger.log("✅ Winner saved: " + manualPlayerName);
+                    playerIndex++;
                 }
             }
+
+            playerIndex = 1;
 
             for (Kingdom k : kingdoms) {
                 Player player = k.getPlayer();
                 if (player != null) {
-
+                    String manualPlayerName = "Player " + playerIndex;
                     kingdomStmt.setInt(1, gameId);
                     kingdomStmt.setInt(2, k.getId());
-                    kingdomStmt.setString(3, player.getName());
+                    kingdomStmt.setString(3, manualPlayerName);
                     kingdomStmt.setInt(4, k.getFood());
                     kingdomStmt.setInt(5, k.getGold());
                     kingdomStmt.setString(6, k.getOwnedBlocks());
                     kingdomStmt.executeUpdate();
-                    GameLogger.log("✅ Kingdom saved: " + player.getName());
-
+                    GameLogger.log("✅ Kingdom saved: " + manualPlayerName);
 
                     resultStmt.setInt(1, gameId);
-                    resultStmt.setString(2, player.getName());
+                    resultStmt.setString(2, manualPlayerName);
                     resultStmt.setInt(3, k.getId());
                     resultStmt.setInt(4, player.getScore());
                     resultStmt.setInt(5, k.getFood());
                     resultStmt.setInt(6, k.getGold());
                     resultStmt.setBoolean(7, winners.contains(k));
                     resultStmt.executeUpdate();
+
+                    playerIndex++;
                 }
             }
 
@@ -138,22 +146,4 @@ public class DatabaseManager {
     }
 
 
-    public void dropTables() {
-        String dropKingdoms = "DROP TABLE IF EXISTS kingdoms CASCADE;";
-        String dropWinners = "DROP TABLE IF EXISTS winners CASCADE;";
-        String dropGames = "DROP TABLE IF EXISTS games CASCADE;";
-
-        try (Connection conn = DriverManager.getConnection(URL, USER, PASS);
-             Statement stmt = conn.createStatement()) {
-
-            stmt.executeUpdate(dropKingdoms);
-            stmt.executeUpdate(dropWinners);
-            stmt.executeUpdate(dropGames);
-
-            GameLogger.log("🧹 All tables dropped.");
-
-        } catch (SQLException e) {
-            GameLogger.logError("❌ Failed to drop tables", e);
-        }
-    }
 }

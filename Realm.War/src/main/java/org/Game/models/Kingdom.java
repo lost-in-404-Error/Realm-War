@@ -20,7 +20,7 @@ public class Kingdom implements Serializable {
     private List<Unit> units;
     private  List<Block> absorbedBlocks;
     private GameState gameState;
-
+    private String playerName;
 
 
     public Kingdom(int id, TownHall townHall) {
@@ -278,12 +278,12 @@ public class Kingdom implements Serializable {
                     }
 
                     if (gameState != null) {
-                                gameState.evaluateGameState();
-                            }
-                        }
-
+                        gameState.evaluateGameState();
                     }
                 }
+
+            }
+        }
 
 
         block.setAbsorbed(true, this.id);
@@ -327,10 +327,6 @@ public class Kingdom implements Serializable {
     }
 
 
-    public Kingdom(int kingdomId) {
-        this.id = kingdomId;
-
-    }
 
 
     public void setStructures(List<Structure> structures) {
@@ -338,5 +334,13 @@ public class Kingdom implements Serializable {
 
     public boolean createUnit(Unit unit) {
         return units.add(unit);
+    }
+
+    public void setId(int kingdomId) {
+    }
+
+
+    public void setOwnedBlocks(String ownedBlocks) {
+
     }
 }

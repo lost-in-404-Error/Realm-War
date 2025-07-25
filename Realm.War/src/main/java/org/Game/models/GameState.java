@@ -6,7 +6,6 @@ import org.Game.models.blocks.*;
 import org.Game.models.structures.Structure;
 import org.Game.models.structures.TownHall;
 import org.Game.models.units.Unit;
-import org.Game.views.InfoPanel;
 
 
 import javax.swing.*;
@@ -47,7 +46,7 @@ public class GameState implements Serializable {
         this.currentPlayerTurn = 0;
         this.turnNumber = 1;
         this.running = false;
-        this.unitController = new UnitController(this);
+
 
 
 
@@ -96,7 +95,7 @@ public class GameState implements Serializable {
             kingdom.setGameState(this);
 
 
-            Player player = new Player("Player " + (i + 1), 0);
+            Player player = new Player();
             kingdom.setPlayer(player);
 
             kingdoms.add(kingdom);
@@ -609,14 +608,14 @@ public class GameState implements Serializable {
         System.out.println("🏆 Kingdom #" + winner.getId() + " wins!");
 
         if (gameController != null && gameController.getGamePanel() != null) {
-          //  JOptionPane.showMessageDialog(gameController.getGamePanel(),
+            //  JOptionPane.showMessageDialog(gameController.getGamePanel(),
             //        "🏆 Player with ID " + winner.getId() + " wins the game!");
         }
     }
     private void announceNoWinner() {
         System.out.println("🟨 Game Over! No winners.");
         if (gameController != null && gameController.getGamePanel() != null) {
-          //  JOptionPane.showMessageDialog(gameController.getGamePanel(),
+            //  JOptionPane.showMessageDialog(gameController.getGamePanel(),
             //        "🟨 Game Over! No players left standing.");
         }
     }

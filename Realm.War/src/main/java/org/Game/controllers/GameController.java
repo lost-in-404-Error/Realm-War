@@ -16,16 +16,12 @@ public class GameController {
     private Unit selectedUnit;
     private volatile boolean paused = false;
     private GamePanel gamePanel;
-    private transient GameController gameController;
 
 
     public GameController(GameState gameState) {
         this.gameState = gameState;
-        gameState.setGameController(this);
-        Unit.setGameState(this.gameState);
 
-        this.gamePanel = new GamePanel(gameState);
-        this.gamePanel.setController(this);
+        Unit.gameState = gameState;
         this.structureController = new StructureController(gameState);
     }
 
@@ -153,16 +149,41 @@ public class GameController {
         return true;
     }
 
-    public boolean tryRecruitUnit(String unitType, Position position) {
+    public class ActionResult {
+        public final boolean success;
+        public final String message;
 
+        public ActionResult(boolean success, String message) {
+            this.success = success;
+            this.message = message;
+        }
+    }
+
+    public ActionResult tryRecruitUnit(String unitType, Position position) {
         Block[][] map = gameState.getGameMap();
         Kingdom currentKingdom = gameState.getCurrentKingdom();
 
-        if (position == null || !isPositionValid(position, map)) return false;
+        if (position == null || !isPositionValid(position, map)) {
+            return new ActionResult(false, "Invalid position.");
+        }
 
         Block block = map[position.getX()][position.getY()];
-        if (block == null || !currentKingdom.getAbsorbedBlocks().contains(block)) return false;
-        if (block.getUnit() != null) return false;
+        if (block == null) {
+            return new ActionResult(false, "Block does not exist.");
+        }
+
+        if (!currentKingdom.getAbsorbedBlocks().contains(block)) {
+            return new ActionResult(false, "This block does not belong to your kingdom.");
+        }
+
+        if (block.getUnit() != null) {
+            return new ActionResult(false, "This block is already occupied by another unit.");
+        }
+
+        if (block.getStructure() != null) {
+            return new ActionResult(false, "Cannot recruit unit on a block with a structure.");
+        }
+
 
         Unit unit = switch (unitType.toLowerCase()) {
             case "peasant" -> new Peasant(position, currentKingdom.getId());
@@ -172,8 +193,17 @@ public class GameController {
             default -> null;
         };
 
-        if (unit == null || currentKingdom.getGold() < unit.getGoldCost() || currentKingdom.getFood() < unit.getFoodCost())
-            return false;
+        if (unit == null) {
+            return new ActionResult(false, "Invalid unit type.");
+        }
+
+        if (currentKingdom.getGold() < unit.getGoldCost()) {
+            return new ActionResult(false, "Not enough gold to recruit this unit.");
+        }
+
+        if (currentKingdom.getFood() < unit.getFoodCost()) {
+            return new ActionResult(false, "Not enough food to recruit this unit.");
+        }
 
         currentKingdom.getUnitController().addUnit(unit);
         block.setUnit(unit);
@@ -182,11 +212,9 @@ public class GameController {
 
         if (gamePanel != null) gamePanel.repaint();
 
-
-        return true;
-
-
+        return new ActionResult(true, "Unit recruited successfully.");
     }
+
     public boolean tryMoveUnit(Unit unit, Position destination) {
         if (unit == null || destination == null) return false;
         if (!isPositionValid(destination, gameState.getGameMap())) return false;
@@ -198,7 +226,6 @@ public class GameController {
         int dy = Math.abs(unit.getPosition().getY() - destination.getY());
         if (dx + dy > unit.getMovementRange()) return false;
 
-
         Structure structure = destBlock.getStructure();
         if (structure instanceof TownHall && structure.getKingdomId() != unit.getKingdomId()) {
             structure.setDurability(0);
@@ -208,13 +235,20 @@ public class GameController {
 
         Kingdom kingdom = gameState.getKingdomById(unit.getKingdomId());
         if (kingdom != null) {
+
+            Position prevPosition = unit.getPosition();
+
+
+            Block sourceBlock = gameState.getBlockAt(prevPosition);
+            if (sourceBlock != null) sourceBlock.setUnit(null);
+
+
             kingdom.moveUnit(unit, destination);
         }
 
-        Block sourceBlock = gameState.getBlockAt(unit.getPosition());
-        if (sourceBlock != null) sourceBlock.setUnit(null);
 
         destBlock.setUnit(unit);
+
         unit.setPosition(destination);
 
         if (gamePanel != null) gamePanel.repaint();
@@ -222,8 +256,11 @@ public class GameController {
         return true;
     }
 
+
     public boolean tryAttack(Position attackerPos, Position targetPos) {
         if (attackerPos == null || targetPos == null) return false;
+
+        if (attackerPos.equals(targetPos)) return false;
 
         Unit attacker = gameState.getUnitAt(attackerPos);
         Unit target = gameState.getUnitAt(targetPos);
@@ -284,7 +321,8 @@ public class GameController {
     }
 
     public boolean tryMerge(Unit u1, Unit u2) {
-        if (u1.canMergeWith(u2)) {
+
+        if (u1 != null && u2 != null && u1 != u2 && u1.canMergeWith(u2)) {
             Kingdom kingdom = gameState.getKingdomById(u1.getKingdomId());
             kingdom.getUnits().remove(u1);
             kingdom.getUnits().remove(u2);
@@ -302,6 +340,7 @@ public class GameController {
 
         return false;
     }
+
 
     public ArrayList<Player> getWinners() {
 

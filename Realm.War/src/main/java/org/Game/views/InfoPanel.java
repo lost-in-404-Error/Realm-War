@@ -46,6 +46,6 @@ public class InfoPanel extends JPanel {
     }
 
     public void showMessage(String s) {
-        
+
     }
 }

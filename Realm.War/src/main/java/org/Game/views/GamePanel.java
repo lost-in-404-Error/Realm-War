@@ -292,7 +292,6 @@ public class GamePanel extends JPanel {
 
         Block[][] map = gameState.getGameMap();
 
-
         for (int x = 0; x < map.length; x++) {
             for (int y = 0; y < map[0].length; y++) {
                 drawBlock(g, map[x][y], x * BLOCK_SIZE, y * BLOCK_SIZE);

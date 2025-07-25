@@ -41,7 +41,7 @@ public class GameFrame extends JFrame {
         infoPanel = new InfoPanel();
         actionPanel = new ActionPanel();
         menuPanel = new MenuPanel();
-        MenuPanel menuPanel = new MenuPanel();
+
         menuPanel.setGameControllerAndPanel(gameController, gamePanel);
 
         setJMenuBar(menuPanel.getMenuBar());
@@ -231,14 +231,18 @@ public class GameFrame extends JFrame {
             JOptionPane.showMessageDialog(this, "No position selected!", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        boolean success = gameController.tryRecruitUnit(unitType, selectedPosition);
-        if (!success) {
-            JOptionPane.showMessageDialog(this, "Failed to recruit " + unitType + ".", "Error", JOptionPane.ERROR_MESSAGE);
+
+        GameController.ActionResult result = gameController.tryRecruitUnit(unitType, selectedPosition);
+
+        if (!result.success) {
+            JOptionPane.showMessageDialog(this, result.message, "Recruitment Failed", JOptionPane.ERROR_MESSAGE);
         } else {
+            JOptionPane.showMessageDialog(this, result.message, "Recruitment Successful", JOptionPane.INFORMATION_MESSAGE);
             gamePanel.repaint();
             updateInfoPanel();
         }
     }
+
 
 
 
@@ -257,8 +261,9 @@ public class GameFrame extends JFrame {
 
     private void startResourceTimer() {
         resourceTimer = new Timer(RESOURCE_INTERVAL, e -> {
-            if (!gamePaused) {
-                gameController.getGameState().getCurrentKingdom().updateResources();
+            Kingdom current = gameController.getGameState().getCurrentKingdom();
+            if (current != null) {
+                current.updateResources();
                 updateInfoPanel();
             }
         });

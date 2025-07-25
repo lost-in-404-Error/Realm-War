@@ -1,62 +1,28 @@
 package org.Game.controllers;
 
 import org.Game.models.GameState;
-import org.Game.models.Kingdom;
 import org.Game.models.Position;
 import org.Game.models.blocks.Block;
 import org.Game.models.units.Unit;
 
+import javax.swing.*;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
 
 public class UnitController {
-    private List<Unit> units;
-    private final GameState gameState;
+    private final List<Unit> units;
+    private GameState gameState;
 
-
-    public UnitController(GameState gameState) {
-        this.units = new ArrayList<>();
-        this.gameState = gameState;
-
+    public UnitController(List<Unit> units) {
+        this.units = (units != null) ? new ArrayList<>(units) : new ArrayList<>();
     }
 
-
-
-    public boolean addUnit(Unit unit) {
-        Position pos = unit.getPosition();
-        Block block = gameState.getBlockAt(pos);
-        Kingdom kingdom = gameState.getKingdom(unit.getKingdomId());
-
-
-        if (block == null || block.getUnit() != null) {
-            return false;
+    public void addUnit(Unit unit) {
+        if (unit != null) {
+            units.add(unit);
         }
-
-
-        if (!kingdom.getAbsorbedBlocks().contains(block)) {
-            return false;
-        }
-
-
-        int goldCost = unit.getGoldCost();
-        int foodCost = unit.getFoodCost();
-
-        if (kingdom.getGold() < goldCost || kingdom.getFood() < foodCost) {
-            return false;
-        }
-
-
-        kingdom.decreaseGold(goldCost);
-        kingdom.decreaseFood(foodCost);
-
-
-        block.setUnit(unit);
-        kingdom.getUnitController().addUnit(unit);
-
-        return true;
     }
-
 
 
     public void removeUnit(Unit unit) {
@@ -90,6 +56,7 @@ public class UnitController {
 
         Block destBlock = gameMap[x][y];
 
+
         if (destBlock == null || destBlock instanceof org.Game.models.blocks.VoidBlock) return false;
         if (destBlock.getUnit() != null) return false;
 
@@ -99,33 +66,39 @@ public class UnitController {
         }
 
 
-        unit.getKingdom().absorbBlock(destBlock);
-
         unit.moveTo(destination);
         destBlock.setUnit(unit);
 
         return true;
     }
 
+
     public void attack(Block attackerBlock, Block targetBlock) {
-        if (attackerBlock == null || targetBlock == null)
-            throw new IllegalArgumentException("Invalid block selected.");
+        if (attackerBlock == null || targetBlock == null) {
+            JOptionPane.showMessageDialog(null, "Invalid block selected.");
+            return;
+        }
 
         Unit attacker = attackerBlock.getUnit();
         Unit target = targetBlock.getUnit();
 
-        if (attacker == null || target == null)
-            throw new IllegalArgumentException("No unit found at selected blocks.");
+        if (attacker == null || target == null) {
+            JOptionPane.showMessageDialog(null, "No unit found at selected blocks.");
+            return;
+        }
 
-        if (attacker.getKingdomId() == target.getKingdomId())
-            throw new IllegalArgumentException("Cannot attack a friendly unit.");
+        if (attacker.getKingdomId() == target.getKingdomId()) {
+            JOptionPane.showMessageDialog(null, "Cannot attack your own unit.");
+            return;
+        }
 
         int distance = Math.abs(attacker.getPosition().getX() - target.getPosition().getX())
                 + Math.abs(attacker.getPosition().getY() - target.getPosition().getY());
 
-        if (distance > attacker.getAttackRange())
-            throw new IllegalArgumentException("Target is out of attack range.");
-
+        if (distance > attacker.getAttackRange()) {
+            JOptionPane.showMessageDialog(null, "Target is out of range.");
+            return;
+        }
 
         int bonus = 0;
         if (attackerBlock.isForest()) bonus += 2;
@@ -137,6 +110,9 @@ public class UnitController {
         if (target.getHitPoints() <= 0) {
             targetBlock.setUnit(null);
             removeUnit(target);
+            JOptionPane.showMessageDialog(null, "Target destroyed!");
+        } else {
+            JOptionPane.showMessageDialog(null, "Attack successful! Target HP: " + target.getHitPoints());
         }
     }
 

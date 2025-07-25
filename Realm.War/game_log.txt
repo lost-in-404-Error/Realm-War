@@ -22,3 +22,46 @@
 [2025-07-25 02:24:29] ✅ Winner saved: Player 2
 [2025-07-25 02:24:29] ✅ Kingdom saved: Player 2
 [2025-07-25 02:24:29] ✅ Game data + results saved to database.
+[2025-07-25 12:59:10] ✅ Winner saved: Player 1
+[2025-07-25 12:59:10] ✅ Kingdom saved: Player 1
+[2025-07-25 12:59:10] ✅ Game data + results saved to database.
+[2025-07-25 13:37:22] ✅ Tables created successfully.
+[2025-07-25 13:38:58] ✅ Game data loaded successfully for gameId: 6
+[2025-07-25 13:41:00] ✅ Game data loaded successfully for gameId: 6
+[2025-07-25 13:47:44] ✅ Game data loaded successfully for gameId: 6
+[2025-07-25 13:54:05] ✅ Game data loaded successfully for gameId: 6
+[2025-07-25 13:57:03] ✅ Game data loaded successfully for gameId: 5
+[2025-07-25 13:58:31] ✅ Game data loaded successfully for gameId: 5
+[2025-07-25 14:01:02] ✅ Game data loaded successfully for gameId: 6
+[2025-07-25 14:03:19] ✅ Game data loaded successfully for gameId: 6
+[2025-07-25 14:12:56] ✅ Game data loaded successfully for gameId: 6
+[2025-07-25 14:25:55] ERROR: ❌ Failed to save game data - ERROR: null value in column "player_name" of relation "kingdoms" violates not-null constraint
+  Detail: Failing row contains (7, 7, 1, null, 71, 135, org.Game.models.Position@5c83d841 org.Game.models.Position@5a040...).
+[2025-07-25 14:26:40] ERROR: ❌ Failed to save game data - ERROR: null value in column "player_name" of relation "kingdoms" violates not-null constraint
+  Detail: Failing row contains (8, 8, 1, null, 65, 125, org.Game.models.Position@7aff1854 org.Game.models.Position@7fac1...).
+[2025-07-25 14:26:50] ✅ Tables created successfully.
+[2025-07-25 14:27:04] ERROR: ❌ Failed to save game data - ERROR: null value in column "player_name" of relation "kingdoms" violates not-null constraint
+  Detail: Failing row contains (9, 9, 1, null, 65, 125, org.Game.models.Position@7fac1b8c org.Game.models.Position@62516...).
+[2025-07-25 14:28:03] ERROR: ❌ Failed to save game data - ERROR: null value in column "player_name" of relation "kingdoms" violates not-null constraint
+  Detail: Failing row contains (10, 10, 1, null, 68, 130, org.Game.models.Position@53199897 org.Game.models.Position@7fac1...).
+[2025-07-25 14:30:08] ERROR: ❌ Failed to save game data - ERROR: null value in column "player_name" of relation "kingdoms" violates not-null constraint
+  Detail: Failing row contains (11, 11, 1, null, 68, 130, org.Game.models.Position@297c848d org.Game.models.Position@2fc91...).
+[2025-07-25 14:31:29] ERROR: ❌ Failed to save game data - ERROR: null value in column "player_name" of relation "kingdoms" violates not-null constraint
+  Detail: Failing row contains (12, 12, 1, null, 65, 125, org.Game.models.Position@51efa41b org.Game.models.Position@3ef1f...).
+[2025-07-25 14:31:44] ✅ Tables created successfully.
+[2025-07-25 14:32:07] ERROR: ❌ Failed to save game data - ERROR: null value in column "player_name" of relation "kingdoms" violates not-null constraint
+  Detail: Failing row contains (13, 13, 1, null, 65, 125, org.Game.models.Position@1efd14e7 org.Game.models.Position@5c06f...).
+[2025-07-25 14:37:06] ERROR: ❌ Failed to save game data - ERROR: null value in column "player_name" of relation "kingdoms" violates not-null constraint
+  Detail: Failing row contains (14, 14, 1, null, 63, 195, org.Game.models.Position@2f538d62 org.Game.models.Position@647a1...).
+[2025-07-25 14:40:24] ERROR: ❌ Failed to save game data - ERROR: null value in column "player_name" of relation "kingdoms" violates not-null constraint
+  Detail: Failing row contains (15, 15, 1, null, 68, 130, org.Game.models.Position@625caf2c org.Game.models.Position@4d30a...).
+[2025-07-25 14:43:57] ERROR: ❌ Failed to save game data - ERROR: null value in column "player_name" of relation "kingdoms" violates not-null constraint
+  Detail: Failing row contains (18, 16, 1, null, 71, 135, org.Game.models.Position@5da0e264 org.Game.models.Position@3ae21...).
+[2025-07-25 14:46:14] ERROR: ❌ Failed to save game data - ERROR: null value in column "player_name" of relation "kingdoms" violates not-null constraint
+  Detail: Failing row contains (19, 17, 1, null, 62, 120, org.Game.models.Position@1efd14e7 org.Game.models.Position@5c06f...).
+[2025-07-25 14:48:30] ERROR: ❌ Failed to save game data - ERROR: null value in column "player_name" of relation "kingdoms" violates not-null constraint
+  Detail: Failing row contains (20, 18, 1, null, 65, 125, org.Game.models.Position@2322a7f1 org.Game.models.Position@71fff...).
+[2025-07-25 14:59:29] ✅ Tables created successfully.
+[2025-07-25 14:59:44] ✅ Kingdom saved: Player 1
+[2025-07-25 14:59:44] ✅ Kingdom saved: Player 2
+[2025-07-25 14:59:44] ✅ Game data + results saved to database.

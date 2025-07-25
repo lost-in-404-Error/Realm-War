@@ -7,7 +7,7 @@ public class Player implements Serializable {
     private String name;
     private int score;
 
-    public Player( String name, int score) {
+    public Player() {
 
         this.name = name;
         this.score = score;
@@ -48,4 +48,7 @@ public class Player implements Serializable {
         this.score = score;
     }
 
+
+    public void setName(String playerName) {
+    }
 }

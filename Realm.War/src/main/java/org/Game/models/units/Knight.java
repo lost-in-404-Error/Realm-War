@@ -6,7 +6,7 @@ import java.io.Serializable;
 
 public class Knight extends Unit implements Serializable {
     public Knight(Position position, int kingdomId) {
-        super(120, 3, 25, 1, 12, 4, 6, position, kingdomId);
+        super(120, 5, 25, 1, 12, 4, 6, position, kingdomId);
     }
 
     @Override

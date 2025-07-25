@@ -11,6 +11,8 @@ public class Position implements Serializable {
         this.y = y;
     }
 
+
+
     public int getX() {
         return x;
     }

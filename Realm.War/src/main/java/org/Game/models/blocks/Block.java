@@ -14,7 +14,7 @@ public abstract class Block implements Serializable {
 
     private Structure structure;
     private Unit unit;
-
+    private static final long serialVersionUID = -421376266421882466L;
     public Block(Position position, boolean walkable) {
         this.position = position;
         this.walkable = walkable;

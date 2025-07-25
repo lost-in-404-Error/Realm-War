@@ -148,31 +148,58 @@ public class MenuPanel extends JPanel {
         });
 
         loadGameItem.addActionListener(e -> {
-            if (gameController == null) {
-                JOptionPane.showMessageDialog(null, "❌ GameController is not initialized.");
-                return;
-            }
+            String[] options = {"Load from File", "Load from Database"};
+            int choice = JOptionPane.showOptionDialog(
+                    null,
+                    "Select load method:",
+                    "Load Game",
+                    JOptionPane.DEFAULT_OPTION,
+                    JOptionPane.QUESTION_MESSAGE,
+                    null,
+                    options,
+                    options[0]
+            );
 
-            JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setDialogTitle("Load Game");
+            if (choice == 0) {
 
-            int userSelection = fileChooser.showOpenDialog(null);
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setDialogTitle("Load Game From File");
+                int userSelection = fileChooser.showOpenDialog(null);
+                if (userSelection == JFileChooser.APPROVE_OPTION) {
+                    String filePath = fileChooser.getSelectedFile().getAbsolutePath();
+                    GameState loadedState = GameState.loadGameState(filePath);
+                    if (loadedState != null) {
+                        gameController.setGameState(loadedState);
+                        gamePanel.setGameState(loadedState);
+                        gamePanel.repaint();
+                        JOptionPane.showMessageDialog(null, "✅ Game loaded from file: " + filePath);
+                    } else {
+                        JOptionPane.showMessageDialog(null, "❌ Failed to load game from file.");
+                    }
+                }
+            } else if (choice == 1) {
 
-            if (userSelection == JFileChooser.APPROVE_OPTION) {
-                String filePath = fileChooser.getSelectedFile().getAbsolutePath();
-                GameState loadedState = GameState.loadGameState(filePath);
-                if (loadedState != null) {
-                    gameController.setGameState(loadedState);
-                    gamePanel.setGameState(loadedState);
-                    gamePanel.repaint();
-
-                    JOptionPane.showMessageDialog(null, "✅ Game loaded from file: " + filePath);
-                    System.out.println("Game loaded successfully.");
-                } else {
-                    JOptionPane.showMessageDialog(null, "❌ Failed to load game.");
+                String gameIdStr = JOptionPane.showInputDialog("Enter Game ID to load from database:");
+                if (gameIdStr != null && !gameIdStr.trim().isEmpty()) {
+                    try {
+                        int gameId = Integer.parseInt(gameIdStr.trim());
+                        DatabaseManager dbManager = new DatabaseManager();
+                      //GameState loadedState = dbManager.loadGameData(gameId);
+                        //if (loadedState != null) {
+                         //   gameController.setGameState(loadedState);
+                          //  gamePanel.setGameState(loadedState);
+                          //  gamePanel.repaint();
+                          //  JOptionPane.showMessageDialog(null, "✅ Game loaded from database (ID: " + gameId + ")");
+                       // } else {
+                         //  JOptionPane.showMessageDialog(null, "❌ Failed to load game from database.");
+                       //}
+                    } catch (NumberFormatException ex) {
+                        JOptionPane.showMessageDialog(null, "❌ Invalid game ID.");
+                    }
                 }
             }
         });
+
         exitItem.addActionListener(e -> {
             int confirm = JOptionPane.showConfirmDialog(
                     null,
